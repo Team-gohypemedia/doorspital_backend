@@ -1,0 +1,211 @@
+const express = require("express");
+const router = express.Router(); 
+
+// Auth controllers
+const signUpController = require("../features/auth/controller/sign_up");
+const signInController = require("../features/auth/controller/sign_in");
+const forgotPasswordController = require("../features/auth/controller/forgot_password/forgot_password_send_otp");
+const forgotPasswordVerifyOtpController = require("../features/auth/controller/forgot_password/forgot_password_verify_otp");
+const resetPasswordController = require("../features/auth/controller/forgot_password/reset_password");
+const googleSignController = require("../features/auth/controller/google_signin/google_signin");
+const adminSignUpController = require("../features/auth/controller/admin_signup");
+const signOutController = require("../features/auth/controller/sign_out");
+const healthArticleController = require("../features/health_article/controller/health_article_controller");
+const doctorController = require("../features/doctors/controller/doctors_controller");
+const doctorVerificationController = require("../features/doctors/controller/doctor_verification_controller");
+const doctorVerificationAdminController = require("../features/doctors/controller/doctor_verification_admin_controller");
+const availabilityController = require("../features/doctors/controller/availability_controller");
+const appointmentController = require("../features/doctors/controller/appointment_controller");
+const profileController = require("../features/profile/controller/profile_controller");
+const notificationsController = require("../features/notifications/controller/notifications_controller");
+const pharmacyProductController = require("../features/pharmacy/controller/pharmacy_product_controller");
+const pharmacyOrderController = require("../features/pharmacy/controller/pharmacy_order_controller");
+const { doctorVerificationUpload, patientDocumentUpload, pharmacyProductUpload } = require("../utils/upload_config");
+const { authenticate, isAdmin } = require("../middleware/auth_middleware");
+
+router.post("/auth/sign-up" , signUpController.signUp);
+router.post("/auth/sign-in" , signInController.signIn);
+router.post("/auth/forgot-password-send-otp" , forgotPasswordController.forgotPasswordSendOtp);
+router.post("/auth/forgot-password-verify-otp", forgotPasswordVerifyOtpController.forgotPasswordVerifyOtp);
+router.post("/auth/reset-password", resetPasswordController.resetPassword);
+router.post("/admin/firebase-config", googleSignController.googleSign);
+router.post("/admin/sign-up", adminSignUpController.adminSignUp);
+router.post("/auth/sign-out", authenticate, signOutController.signOut);
+router.post("/health-article/model/health-artical-model" ,healthArticleController.createHealthArticle);
+
+// Profile Routes
+router.get("/profile/me", authenticate, profileController.getProfile);
+router.put("/profile/me", authenticate, profileController.updateProfile);
+router.post(
+  "/profile/documents",
+  authenticate,
+  patientDocumentUpload.single("document"),
+  profileController.uploadIdentityDocument
+);
+
+// Notification Routes
+router.get("/notifications", authenticate, notificationsController.getNotifications);
+router.patch(
+  "/notifications/:notificationId/read",
+  authenticate,
+  notificationsController.markNotificationRead
+);
+
+
+//Doctors Routes 
+router.get("/doctors/top", doctorController.topDoctors);
+router.get("/doctor/:doctorId", doctorController.doctor);
+router.post("/doctors/sign-up", doctorController.doctorSignUp);
+router.get("/doctors/:doctorId/availability", doctorController.doctorAvailability);
+router.get("/doctors/my-doctor-id", authenticate, doctorController.getMyDoctorId);
+
+// Doctor Availability Routes (for verified doctors to set their schedule)
+router.post(
+  "/doctors/:doctorId/availability/set",
+  authenticate,
+  availabilityController.setAvailability
+);
+router.get(
+  "/doctors/:doctorId/availability/schedule",
+  availabilityController.getAvailability
+);
+
+// Doctor Verification Routes
+router.post(
+  "/doctors/verification/submit",
+  doctorVerificationUpload,
+  doctorVerificationController.submitVerification
+);
+router.get(
+  "/doctors/verification/:doctorId",
+  doctorVerificationController.getVerificationStatus
+);
+router.get(
+  "/doctors/verification",
+  doctorVerificationController.getAllVerifications
+);
+
+// Admin Doctor Verification Routes (Protected - requires authentication and admin role)
+router.put(
+  "/admin/doctors/verification/:verificationId/approve",
+  authenticate,
+  isAdmin,
+  doctorVerificationAdminController.approveVerification
+);
+router.put(
+  "/admin/doctors/verification/:verificationId/reject",
+  authenticate,
+  isAdmin,
+  doctorVerificationAdminController.rejectVerification
+);
+router.put(
+  "/admin/doctors/verification/:verificationId/status",
+  authenticate,
+  isAdmin,
+  doctorVerificationAdminController.updateVerificationStatus
+);
+router.get(
+  "/admin/doctors/verification/:verificationId",
+  authenticate,
+  isAdmin,
+  doctorVerificationAdminController.getVerificationDetails
+);
+
+// Appointment Booking Routes
+router.get(
+  "/appointments/doctors/available",
+  appointmentController.searchAvailableDoctors
+);
+router.get(
+  "/doctors/dashboard/overview",
+  authenticate,
+  appointmentController.getDoctorDashboardOverview
+);
+router.get(
+  "/doctors/dashboard/appointments",
+  authenticate,
+  appointmentController.getDoctorAppointments
+);
+router.get(
+  "/doctors/dashboard/patients",
+  authenticate,
+  appointmentController.getDoctorPatients
+);
+router.post(
+  "/appointments/book",
+  authenticate,
+  appointmentController.bookAppointment
+);
+router.get(
+  "/appointments/my-appointments",
+  authenticate,
+  appointmentController.getMyAppointments
+);
+router.put(
+  "/appointments/:appointmentId/cancel",
+  authenticate,
+  appointmentController.cancelAppointment
+);
+router.put(
+  "/doctors/appointments/:appointmentId/status",
+  authenticate,
+  appointmentController.updateAppointmentStatusByDoctor
+);
+
+// Pharmacy Product Routes
+router.post(
+  "/pharmacy/products",
+  authenticate,
+  isAdmin,
+  pharmacyProductUpload.array("images", 5),
+  pharmacyProductController.createProduct
+);
+router.get("/pharmacy/products", pharmacyProductController.getProducts);
+router.get(
+  "/pharmacy/products/:productId",
+  pharmacyProductController.getProductById
+);
+router.put(
+  "/pharmacy/products/:productId",
+  authenticate,
+  isAdmin,
+  pharmacyProductUpload.array("images", 5),
+  pharmacyProductController.updateProduct
+);
+router.delete(
+  "/pharmacy/products/:productId",
+  authenticate,
+  isAdmin,
+  pharmacyProductController.archiveProduct
+);
+
+// Pharmacy Orders
+router.post(
+  "/pharmacy/orders",
+  authenticate,
+  pharmacyOrderController.createOrder
+);
+router.get(
+  "/pharmacy/orders/me",
+  authenticate,
+  pharmacyOrderController.getMyOrders
+);
+router.get(
+  "/pharmacy/orders/:orderId",
+  authenticate,
+  pharmacyOrderController.getOrderById
+);
+router.get(
+  "/pharmacy/orders",
+  authenticate,
+  isAdmin,
+  pharmacyOrderController.getAllOrders
+);
+router.patch(
+  "/pharmacy/orders/:orderId/status",
+  authenticate,
+  isAdmin,
+  pharmacyOrderController.updateOrderStatus
+);
+
+module.exports = router;

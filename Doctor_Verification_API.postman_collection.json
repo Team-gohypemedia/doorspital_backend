@@ -1,0 +1,463 @@
+{
+	"info": {
+		"_postman_id": "doctor-verification-api",
+		"name": "Doctor Verification API",
+		"description": "Complete API collection for doctor verification system",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "1. Submit Doctor Verification",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "doctorId",
+							"value": "YOUR_DOCTOR_ID_HERE",
+							"type": "text",
+							"description": "Doctor ID from database"
+						},
+						{
+							"key": "fullName",
+							"value": "Dr. John Doe",
+							"type": "text"
+						},
+						{
+							"key": "email",
+							"value": "doctor@example.com",
+							"type": "text"
+						},
+						{
+							"key": "phoneNumber",
+							"value": "+1234567890",
+							"type": "text"
+						},
+						{
+							"key": "medicalSpecialization",
+							"value": "Cardiology",
+							"type": "text"
+						},
+						{
+							"key": "yearsOfExperience",
+							"value": "10",
+							"type": "text"
+						},
+						{
+							"key": "clinicHospitalName",
+							"value": "City Hospital",
+							"type": "text"
+						},
+						{
+							"key": "clinicAddress",
+							"value": "123 Main Street, Downtown",
+							"type": "text"
+						},
+						{
+							"key": "state",
+							"value": "Maharashtra",
+							"type": "text"
+						},
+						{
+							"key": "city",
+							"value": "Mumbai",
+							"type": "text"
+						},
+						{
+							"key": "registrationNumber",
+							"value": "REG123456",
+							"type": "text"
+						},
+						{
+							"key": "councilName",
+							"value": "MCI",
+							"type": "text",
+							"description": "Options: MCI or State Council"
+						},
+						{
+							"key": "issueDate",
+							"value": "2020-01-15",
+							"type": "text",
+							"description": "Format: YYYY-MM-DD"
+						},
+						{
+							"key": "documentType",
+							"value": "Aadhaar Card",
+							"type": "text",
+							"description": "Options: Aadhaar Card, PAN Card, Passport, Driving License"
+						},
+						{
+							"key": "mbbsCertificate",
+							"type": "file",
+							"src": [],
+							"description": "Required: JPG, PNG, SVG, or PDF (max 5MB)"
+						},
+						{
+							"key": "mdMsBdsCertificate",
+							"type": "file",
+							"src": [],
+							"description": "Optional: JPG, PNG, SVG, or PDF (max 5MB)"
+						},
+						{
+							"key": "registrationCertificate",
+							"type": "file",
+							"src": [],
+							"description": "Required: JPG, PNG, SVG, or PDF (max 5MB)"
+						},
+						{
+							"key": "governmentId",
+							"type": "file",
+							"src": [],
+							"description": "Required: JPG, PNG, or PDF (max 5MB)"
+						},
+						{
+							"key": "selfie",
+							"type": "file",
+							"src": [],
+							"description": "Required: JPG or PNG (max 5MB)"
+						}
+					]
+				},
+				"url": {
+					"raw": "{{base_url}}/doctors/verification/submit",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"doctors",
+						"verification",
+						"submit"
+					]
+				},
+				"description": "Submit doctor verification documents and information. All files must be under 5MB."
+			},
+			"response": []
+		},
+		{
+			"name": "2. Get Verification Status",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/doctors/verification/:doctorId",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"doctors",
+						"verification",
+						":doctorId"
+					],
+					"variable": [
+						{
+							"key": "doctorId",
+							"value": "YOUR_DOCTOR_ID_HERE",
+							"description": "Doctor ID"
+						}
+					]
+				},
+				"description": "Get verification status for a specific doctor"
+			},
+			"response": []
+		},
+		{
+			"name": "3. Get All Verifications",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/doctors/verification?status=pending&page=1&limit=10",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"doctors",
+						"verification"
+					],
+					"query": [
+						{
+							"key": "status",
+							"value": "pending",
+							"description": "Options: pending, under_review, approved, rejected",
+							"disabled": true
+						},
+						{
+							"key": "page",
+							"value": "1",
+							"description": "Page number",
+							"disabled": true
+						},
+						{
+							"key": "limit",
+							"value": "10",
+							"description": "Items per page",
+							"disabled": true
+						}
+					]
+				},
+				"description": "Get all verification requests with optional filtering and pagination"
+			},
+			"response": []
+		},
+		{
+			"name": "0. Admin: Sign Up",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"userName\": \"Admin User\",\n  \"email\": \"admin@example.com\",\n  \"password\": \"admin123456\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/admin/sign-up",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"admin",
+						"sign-up"
+					]
+				},
+				"description": "Create an admin user account"
+			},
+			"response": []
+		},
+		{
+			"name": "0. Admin: Sign In",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"email\": \"admin@example.com\",\n  \"password\": \"admin123456\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/auth/sign-in",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"auth",
+						"sign-in"
+					]
+				},
+				"description": "Sign in as admin to get JWT token. Copy the token from response and use it in Authorization header for admin endpoints."
+			},
+			"response": []
+		},
+		{
+			"name": "4. Admin: Approve Verification",
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{admin_token}}",
+						"description": "JWT token from admin sign-in"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/admin/doctors/verification/:verificationId/approve",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"admin",
+						"doctors",
+						"verification",
+						":verificationId",
+						"approve"
+					],
+					"variable": [
+						{
+							"key": "verificationId",
+							"value": "YOUR_VERIFICATION_ID_HERE",
+							"description": "Verification ID from submit response"
+						}
+					]
+				},
+				"description": "Approve a doctor verification request"
+			},
+			"response": []
+		},
+		{
+			"name": "5. Admin: Reject Verification",
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{admin_token}}",
+						"description": "JWT token from admin sign-in"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"rejectionReason\": \"Invalid certificate format\",\n  \"adminNotes\": \"Please resubmit with a clearer copy\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/admin/doctors/verification/:verificationId/reject",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"admin",
+						"doctors",
+						"verification",
+						":verificationId",
+						"reject"
+					],
+					"variable": [
+						{
+							"key": "verificationId",
+							"value": "YOUR_VERIFICATION_ID_HERE",
+							"description": "Verification ID"
+						}
+					]
+				},
+				"description": "Reject a doctor verification request with reason"
+			},
+			"response": []
+		},
+		{
+			"name": "6. Admin: Update Verification Status",
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{admin_token}}",
+						"description": "JWT token from admin sign-in"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"status\": \"under_review\",\n  \"adminNotes\": \"Reviewing documents\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/admin/doctors/verification/:verificationId/status",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"admin",
+						"doctors",
+						"verification",
+						":verificationId",
+						"status"
+					],
+					"variable": [
+						{
+							"key": "verificationId",
+							"value": "YOUR_VERIFICATION_ID_HERE",
+							"description": "Verification ID"
+						}
+					]
+				},
+				"description": "Update verification status (pending, under_review, approved, rejected)"
+			},
+			"response": []
+		},
+		{
+			"name": "7. Admin: Get Verification Details",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{admin_token}}",
+						"description": "JWT token from admin sign-in"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/admin/doctors/verification/:verificationId",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"admin",
+						"doctors",
+						"verification",
+						":verificationId"
+					],
+					"variable": [
+						{
+							"key": "verificationId",
+							"value": "YOUR_VERIFICATION_ID_HERE",
+							"description": "Verification ID"
+						}
+					]
+				},
+				"description": "Get full verification details including all file paths (for admin review)"
+			},
+			"response": []
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:3000/api",
+			"type": "string"
+		},
+		{
+			"key": "admin_token",
+			"value": "",
+			"type": "string",
+			"description": "JWT token from admin sign-in. Copy from sign-in response and paste here."
+		}
+	]
+}
+

@@ -1,0 +1,73 @@
+# Node modules
+node_modules/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Runtime data
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# dotenv environment variables
+.env
+.env.*.local
+*.env
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Build output
+dist/
+build/
+coverage/
+
+# Cache
+.npm/
+.cache/
+.parcel-cache/
+.next/
+.vercel/
+.nuxt/
+.svelte-kit/
+
+# TypeScript
+*.tsbuildinfo
+
+# Optional: VSCode settings
+.vscode/
+
+# Optional: local environment overrides
+*.local
+
+# Optional: PM2 logs
+.pm2/logs/
+
+
+uploads/
+
+# Project-specific: Firebase admin SDK key (sensitive)
+src/admin/*.json
+
+# Firebase local files
+.firebase/
+
+# Certificates and keys
+*.pem
+*.key
+*.crt
+
+# temp folders
+tmp/
+temp/
+
+# Keep lockfiles tracked by default; uncomment if you want to ignore them
+# package-lock.json
+# yarn.lock
