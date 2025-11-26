@@ -9,6 +9,7 @@ const utc = require("dayjs/plugin/utc");
 const timezone = require("dayjs/plugin/timezone");
 dayjs.extend(utc);
 dayjs.extend(timezone);
+const Notification = require("../../notifications/model/notification_model");
 
 /**
  * Resolve the doctor document associated with the authenticated user.
@@ -381,6 +382,27 @@ const bookAppointment = async (req, res) => {
       mode: mode || "online",
       status: "confirmed",
     });
+
+    // Fire notification for the patient (best effort)
+    try {
+      await Notification.create({
+        user: patientId,
+        title: "Appointment confirmed",
+        body: `Your appointment is scheduled on ${appointmentStart.format(
+          "MMM D, YYYY [at] hh:mm A"
+        )}.`,
+        type: "appointment",
+        data: {
+          appointmentId: appointment._id,
+          doctorId,
+          startTime: appointment.startTime,
+          endTime: appointment.endTime,
+          mode: appointment.mode,
+        },
+      });
+    } catch (notifyErr) {
+      console.error("Failed to create notification for appointment:", notifyErr);
+    }
 
     return res.status(201).json({
       success: true,
