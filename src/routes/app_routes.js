@@ -18,6 +18,7 @@ const availabilityController = require("../features/doctors/controller/availabil
 const appointmentController = require("../features/doctors/controller/appointment_controller");
 const profileController = require("../features/profile/controller/profile_controller");
 const notificationsController = require("../features/notifications/controller/notifications_controller");
+const chatController = require("../features/chat/controller/chat_controller");
 const pharmacyProductController = require("../features/pharmacy/controller/pharmacy_product_controller");
 const pharmacyOrderController = require("../features/pharmacy/controller/pharmacy_order_controller");
 const { doctorVerificationUpload, patientDocumentUpload, pharmacyProductUpload } = require("../utils/upload_config");
@@ -49,6 +50,25 @@ router.patch(
   "/notifications/:notificationId/read",
   authenticate,
   notificationsController.markNotificationRead
+);
+
+// Chat Routes
+router.get("/chat/rooms", authenticate, chatController.listRooms);
+router.post("/chat/rooms", authenticate, chatController.createOrGetRoom);
+router.get(
+  "/chat/rooms/:roomId/messages",
+  authenticate,
+  chatController.getMessages
+);
+router.post(
+  "/chat/rooms/:roomId/messages",
+  authenticate,
+  chatController.sendMessage
+);
+router.patch(
+  "/chat/rooms/:roomId/read",
+  authenticate,
+  chatController.markRoomRead
 );
 
 

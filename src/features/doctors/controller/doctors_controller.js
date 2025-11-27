@@ -55,11 +55,12 @@ const doctorSignUp = async (req, res) => {
       userName: name || email,
       email: email,
       password: hashedPassword,
-      role: "user", // Doctors are regular users, can be changed if needed
+      role: "doctor",
     });
 
     // Create doctor profile
     const doctor = await Doctor.create({
+      user: user._id,
       specialization,
       experienceYears,
       consultationFee,
@@ -90,7 +91,21 @@ const doctorSignUp = async (req, res) => {
  */
 const getMyDoctorId = async (req, res) => {
   try {
+    const userId = req.user._id;
     const userEmail = req.user.email; // From auth middleware
+
+    // Fast path: doctor profile linked via user reference
+    const doctorProfile = await Doctor.findOne({ user: userId }).lean();
+    if (doctorProfile) {
+      return res.status(200).json({
+        success: true,
+        data: {
+          doctorId: doctorProfile._id,
+          email: userEmail,
+          verificationStatus: "linked",
+        },
+      });
+    }
 
     // Method 1: Find doctor by checking verification records
     const DoctorVerification = require("../model/doctor_verification_model");
