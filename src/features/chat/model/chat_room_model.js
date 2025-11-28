@@ -43,3 +43,6 @@ chatRoomSchema.index({ patient: 1, doctor: 1 });
 
 module.exports = mongoose.model("ChatRoom", chatRoomSchema);
 
+
+
+

@@ -71,11 +71,22 @@ const setAvailability = async (req, res) => {
         slotDurationMinutes: "integer|min:5|max:60",
       });
 
-      const matched = await v.validate();
+      let matched = false;
+      try {
+        matched = await v.validate();
+      } catch (validatorErr) {
+        console.error('Validator threw exception:', validatorErr);
+        return res.status(422).json({
+          success: false,
+          message: 'Validation library error',
+          error: validatorErr && validatorErr.message ? validatorErr.message : String(validatorErr),
+        });
+      }
+
       if (!matched) {
         return res.status(422).json({
           success: false,
-          message: "Validation error",
+          message: 'Validation error',
           errors: v.errors,
         });
       }

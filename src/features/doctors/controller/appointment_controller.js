@@ -318,10 +318,6 @@ const bookAppointment = async (req, res) => {
       });
     }
 
-    // Calculate end time (default 15 minutes, or use doctor's slot duration)
-    const slotDuration = 15; // minutes
-    const appointmentEnd = appointmentStart.add(slotDuration, "minute");
-
     // Check if slot is available
     const availability = await getWeeklyAvailability({
       doctorId,
@@ -357,6 +353,9 @@ const bookAppointment = async (req, res) => {
         message: "This time slot is no longer available",
       });
     }
+
+    const slotDuration = slot.durationMinutes || 15;
+    const appointmentEnd = appointmentStart.add(slotDuration, "minute");
 
     // Check for existing appointment at this time
     const existingAppointment = await Appointment.findOne({

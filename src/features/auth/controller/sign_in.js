@@ -59,7 +59,7 @@ const signIn = async (req, res) => {
             message: "Signed in",
             token,
             user: {
-                id: user._id,
+                id: user._id.toString(),
                 email: user.email,
                 userName: user.userName,
                 role: user.role || "user",

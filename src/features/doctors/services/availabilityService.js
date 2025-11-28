@@ -96,6 +96,7 @@ async function getWeeklyAvailability({ doctorId, startISO, days = 7, tzOverride 
           startUtc: startUtcDate.toISOString(),
           label: cursor.format("hh:mm A"),
           available,
+          durationMinutes: step,
         });
 
         cursor = next;
