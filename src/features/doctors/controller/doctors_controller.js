@@ -159,11 +159,19 @@ const topDoctors = async (req, res, next) => {
       Doctor.find(filter)
         .skip(skip)
         .limit(Number(limit))
+        .populate({ path: "user", select: "userName email" })
         .lean(),
       Doctor.countDocuments(filter),
     ]);
 
-    res.json({ data, page: Number(page), total });
+    // Add doctorName field for frontend convenience
+    const enrichedData = data.map(doctor => ({
+      ...doctor,
+      doctorName: doctor.user?.userName || "Unknown Doctor",
+      doctorEmail: doctor.user?.email || null,
+    }));
+
+    res.json({ data: enrichedData, page: Number(page), total });
   } catch (err) {
     next(err);
   }
@@ -171,7 +179,9 @@ const topDoctors = async (req, res, next) => {
 
 const doctor = async (req, res, next) => {
   try {
-    const doctor = await Doctor.findById(req.params.doctorId).lean();
+    const doctor = await Doctor.findById(req.params.doctorId)
+      .populate({ path: "user", select: "userName email" })
+      .lean();
 
     if (!doctor) return res.status(404).json({ message: "Doctor not found" });
     res.json({ data: doctor });
