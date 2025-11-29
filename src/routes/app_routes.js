@@ -21,6 +21,7 @@ const notificationsController = require("../features/notifications/controller/no
 const chatController = require("../features/chat/controller/chat_controller");
 const pharmacyProductController = require("../features/pharmacy/controller/pharmacy_product_controller");
 const pharmacyOrderController = require("../features/pharmacy/controller/pharmacy_order_controller");
+const adminController = require("../features/admin/controller/admin_controller");
 const { doctorVerificationUpload, patientDocumentUpload, pharmacyProductUpload } = require("../utils/upload_config");
 const { authenticate, isAdmin } = require("../middleware/auth_middleware");
 
@@ -227,5 +228,50 @@ router.patch(
   isAdmin,
   pharmacyOrderController.updateOrderStatus
 );
+
+// ============================================================================
+// ADMIN ROUTES (All protected with isAdmin middleware)
+// ============================================================================
+
+// Dashboard & Statistics
+router.get("/admin/dashboard/stats", authenticate, isAdmin, adminController.getDashboardStats);
+
+// User Management
+router.get("/admin/users", authenticate, isAdmin, adminController.getAllUsers);
+router.get("/admin/users/:userId", authenticate, isAdmin, adminController.getUserById);
+router.put("/admin/users/:userId/role", authenticate, isAdmin, adminController.updateUserRole);
+router.delete("/admin/users/:userId", authenticate, isAdmin, adminController.deleteUser);
+router.post("/admin/users/bulk-delete", authenticate, isAdmin, adminController.bulkDeleteUsers);
+
+// Doctor Management
+router.get("/admin/doctors", authenticate, isAdmin, adminController.getAllDoctors);
+router.get("/admin/doctors/:doctorId", authenticate, isAdmin, adminController.getDoctorById);
+router.patch("/admin/doctors/:doctorId/toggle-status", authenticate, isAdmin, adminController.toggleDoctorStatus);
+
+// Doctor Verification Management
+router.get("/admin/verifications", authenticate, isAdmin, adminController.getAllVerifications);
+router.patch("/admin/verifications/:verificationId/status", authenticate, isAdmin, adminController.updateVerificationStatus);
+
+// Appointment Management
+router.get("/admin/appointments", authenticate, isAdmin, adminController.getAllAppointments);
+router.patch("/admin/appointments/:appointmentId/status", authenticate, isAdmin, adminController.updateAppointmentStatus);
+router.delete("/admin/appointments/:appointmentId", authenticate, isAdmin, adminController.deleteAppointment);
+router.post("/admin/appointments/bulk-update-status", authenticate, isAdmin, adminController.bulkUpdateAppointmentStatus);
+
+// Pharmacy Management
+router.get("/admin/pharmacy/products", authenticate, isAdmin, adminController.getAllPharmacyProducts);
+router.get("/admin/pharmacy/orders", authenticate, isAdmin, adminController.getAllPharmacyOrders);
+router.patch("/admin/pharmacy/orders/:orderId/status", authenticate, isAdmin, adminController.updatePharmacyOrderStatus);
+
+// Notifications Management
+router.get("/admin/notifications", authenticate, isAdmin, adminController.getAllNotifications);
+router.delete("/admin/notifications/:notificationId", authenticate, isAdmin, adminController.deleteNotification);
+
+// Chat Management
+router.get("/admin/chat/rooms", authenticate, isAdmin, adminController.getAllChatRooms);
+router.get("/admin/chat/conversations", authenticate, isAdmin, adminController.getAllConversations);
+
+// Health Articles Management
+router.get("/admin/health-articles", authenticate, isAdmin, adminController.getAllHealthArticles);
 
 module.exports = router;
