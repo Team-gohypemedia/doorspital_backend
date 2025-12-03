@@ -253,6 +253,42 @@ const toggleDoctorStatus = async (req, res) => {
   }
 };
 
+const updateDoctorDetails = async (req, res) => {
+  try {
+    const { doctorId } = req.params;
+    const { specialization, city, experienceYears, consultationFee, isActive, userName, email } = req.body;
+
+    if (!mongoose.Types.ObjectId.isValid(doctorId)) {
+      return res.status(400).json({ success: false, message: 'Invalid doctorId' });
+    }
+
+    const doctor = await Doctor.findById(doctorId);
+    if (!doctor) return res.status(404).json({ success: false, message: 'Doctor not found' });
+
+    // Update Doctor fields
+    if (specialization !== undefined) doctor.specialization = specialization;
+    if (city !== undefined) doctor.city = city;
+    if (experienceYears !== undefined) doctor.experienceYears = experienceYears;
+    if (consultationFee !== undefined) doctor.consultationFee = consultationFee;
+    if (typeof isActive === 'boolean') doctor.isActive = isActive;
+
+    await doctor.save();
+
+    // Update User fields if provided
+    if (userName || email) {
+      const userUpdate = {};
+      if (userName) userUpdate.userName = userName;
+      if (email) userUpdate.email = email;
+      await User.findByIdAndUpdate(doctor.user, userUpdate);
+    }
+
+    return res.status(200).json({ success: true, message: 'Doctor updated successfully', data: doctor });
+  } catch (err) {
+    console.error('Update doctor error:', err);
+    return res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+};
+
 // ============================================================================
 // DOCTOR VERIFICATION MANAGEMENT
 // ============================================================================
@@ -637,7 +673,9 @@ module.exports = {
   deleteUser,
   getAllDoctors,
   getDoctorById,
+  getDoctorById,
   toggleDoctorStatus,
+  updateDoctorDetails,
   getAllVerifications,
   updateVerificationStatus,
   getAllAppointments,

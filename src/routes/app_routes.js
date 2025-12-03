@@ -1,5 +1,5 @@
 const express = require("express");
-const router = express.Router(); 
+const router = express.Router();
 
 // Auth controllers
 const signUpController = require("../features/auth/controller/sign_up");
@@ -25,15 +25,15 @@ const adminController = require("../features/admin/controller/admin_controller")
 const { doctorVerificationUpload, patientDocumentUpload, pharmacyProductUpload } = require("../utils/upload_config");
 const { authenticate, isAdmin } = require("../middleware/auth_middleware");
 
-router.post("/auth/sign-up" , signUpController.signUp);
-router.post("/auth/sign-in" , signInController.signIn);
-router.post("/auth/forgot-password-send-otp" , forgotPasswordController.forgotPasswordSendOtp);
+router.post("/auth/sign-up", signUpController.signUp);
+router.post("/auth/sign-in", signInController.signIn);
+router.post("/auth/forgot-password-send-otp", forgotPasswordController.forgotPasswordSendOtp);
 router.post("/auth/forgot-password-verify-otp", forgotPasswordVerifyOtpController.forgotPasswordVerifyOtp);
 router.post("/auth/reset-password", resetPasswordController.resetPassword);
 router.post("/admin/firebase-config", googleSignController.googleSign);
 router.post("/admin/sign-up", adminSignUpController.adminSignUp);
 router.post("/auth/sign-out", authenticate, signOutController.signOut);
-router.post("/health-article/model/health-artical-model" ,healthArticleController.createHealthArticle);
+router.post("/health-article/model/health-artical-model", healthArticleController.createHealthArticle);
 
 // Profile Routes
 router.get("/profile/me", authenticate, profileController.getProfile);
@@ -247,6 +247,7 @@ router.post("/admin/users/bulk-delete", authenticate, isAdmin, adminController.b
 router.get("/admin/doctors", authenticate, isAdmin, adminController.getAllDoctors);
 router.get("/admin/doctors/:doctorId", authenticate, isAdmin, adminController.getDoctorById);
 router.patch("/admin/doctors/:doctorId/toggle-status", authenticate, isAdmin, adminController.toggleDoctorStatus);
+router.put("/admin/doctors/:doctorId", authenticate, isAdmin, adminController.updateDoctorDetails);
 
 // Doctor Verification Management
 router.get("/admin/verifications", authenticate, isAdmin, adminController.getAllVerifications);

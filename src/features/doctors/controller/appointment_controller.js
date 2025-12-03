@@ -142,7 +142,7 @@ const searchAvailableDoctors = async (req, res) => {
     if (city) doctorFilter.city = city;
 
     // Get all active doctors matching criteria
-    const doctors = await Doctor.find(doctorFilter).lean();
+    const doctors = await Doctor.find(doctorFilter).populate("user", "userName").lean();
 
     // Get verified doctors only
     const verifiedDoctorIds = await DoctorVerification.distinct("doctor", {
@@ -175,7 +175,7 @@ const searchAvailableDoctors = async (req, res) => {
         // Use the date string directly, ensuring it's in YYYY-MM-DD format
         const dateStr = selectedDate.format("YYYY-MM-DD");
         console.log(`Doctor ${doctor._id}: Checking availability for date: ${dateStr}`);
-        
+
         // Use start of day in doctor's timezone to ensure correct date matching
         const doctorTz = doctor.timeZone || "Asia/Kolkata";
         // Create date in doctor's timezone at midnight, then format with timezone
@@ -184,7 +184,7 @@ const searchAvailableDoctors = async (req, res) => {
         const isoWithTz = dateInDoctorTz.format();
         console.log(`Doctor ${doctor._id}: Date ${dateStr} in ${doctorTz}:`, dateInDoctorTz.format("YYYY-MM-DD HH:mm:ss Z"));
         console.log(`Doctor ${doctor._id}: ISO with timezone:`, isoWithTz);
-        
+
         const availability = await getWeeklyAvailability({
           doctorId: doctor._id,
           startISO: isoWithTz,
@@ -200,10 +200,10 @@ const searchAvailableDoctors = async (req, res) => {
           // Try with the original date format
           dayData = availability.days.find((d) => d.date === date);
         }
-        
+
         console.log(`Doctor ${doctor._id}: dayData found:`, !!dayData, "slots:", dayData?.slots?.length || 0);
         console.log(`Doctor ${doctor._id}: Looking for date: ${dateStr}, available dates:`, availability.days.map(d => d.date));
-        
+
         if (dayData && dayData.slots) {
           const availableSlots = dayData.slots.filter((slot) => slot.available);
           console.log(`Doctor ${doctor._id}: available slots:`, availableSlots.length);
@@ -212,6 +212,7 @@ const searchAvailableDoctors = async (req, res) => {
             results.push({
               doctor: {
                 id: doctor._id,
+                name: doctor.user?.userName || "Unknown Doctor",
                 specialization: doctor.specialization,
                 experienceYears: doctor.experienceYears,
                 consultationFee: doctor.consultationFee,
@@ -692,7 +693,7 @@ const getDoctorAppointments = async (req, res) => {
   try {
     const { doctor } = await resolveDoctorContext(req);
     console.log('🔍 Doctor found:', doctor._id, 'for user:', req.user?._id);
-    
+
     const { status, range, date, page = 1, limit = 10 } = req.query;
     const filter = { doctor: doctor._id };
     const validStatuses = ["pending", "confirmed", "cancelled", "completed"];
@@ -750,9 +751,9 @@ const getDoctorAppointments = async (req, res) => {
       range === "past" ? -1 : range === "today" ? 1 : range === "upcoming" ? 1 : 1;
 
     const skip = (Number(page) - 1) * Number(limit);
-    
+
     console.log('📋 Filter for appointments:', JSON.stringify(filter, null, 2));
-    
+
     const [appointments, total] = await Promise.all([
       Appointment.find(filter)
         .populate("patient", "userName email")
@@ -796,7 +797,7 @@ const getDoctorAppointments = async (req, res) => {
       user: req.user?._id,
       userEmail: req.user?.email,
     });
-    
+
     if (error.statusCode) {
       return res.status(error.statusCode).json({
         success: false,
