@@ -643,7 +643,7 @@ const getAllHealthArticles = async (req, res) => {
     const skip = (page - 1) * limit;
 
     const [articles, total] = await Promise.all([
-      HealthArticle.find().populate('author', 'userName email').skip(skip).limit(limit).sort({ createdAt: -1 }).lean(),
+      HealthArticle.find().skip(skip).limit(limit).sort({ createdAt: -1 }).lean(),
       HealthArticle.countDocuments(),
     ]);
 
