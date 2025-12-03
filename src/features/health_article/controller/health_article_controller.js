@@ -13,6 +13,7 @@ const createHealthArticle = async (req, res) => {
       title: "required",
       date: "required",
       time: "required",
+      description: "required",
     });
 
     const matched = await v.validate();
@@ -24,10 +25,10 @@ const createHealthArticle = async (req, res) => {
       });
     }
 
-    const { image, title, date, time } = req.body;
+    const { image, title, date, time, description } = req.body;
 
     // ✅ Create article
-    const article = await HealthArticle.create({ image, title, date, time });
+    const article = await HealthArticle.create({ image, title, date, time, description });
 
     return res.status(201).json({
       success: true,

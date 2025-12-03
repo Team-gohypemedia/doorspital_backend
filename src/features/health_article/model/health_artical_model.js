@@ -19,6 +19,11 @@ const healthArticleSchema = new mongoose.Schema({
     time: {
         type: String,
         require: true,
+    },
+
+    description: {
+        type: String,
+        require: true,
     }
 
 
