@@ -275,5 +275,6 @@ router.get("/admin/chat/conversations", authenticate, isAdmin, adminController.g
 
 // Health Articles Management
 router.get("/admin/health-articles", authenticate, isAdmin, adminController.getAllHealthArticles);
+router.post("/admin/health-articles", authenticate, isAdmin, healthArticleController.createHealthArticle);
 
 module.exports = router;
