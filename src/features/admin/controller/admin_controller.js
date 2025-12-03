@@ -371,9 +371,24 @@ const getAllAppointments = async (req, res) => {
     if (mode) filter.mode = mode;
 
     const [appointments, total] = await Promise.all([
-      Appointment.find(filter).populate('patient', 'userName email').populate('doctor', 'specialization').skip(skip).limit(limit).sort({ startTime: -1 }).lean(),
+      Appointment.find(filter)
+        .populate('patient', 'userName email')
+        .populate({
+          path: 'doctor',
+          select: 'specialization',
+          populate: {
+            path: 'user',
+            select: 'userName email'
+          }
+        })
+        .skip(skip)
+        .limit(limit)
+        .sort({ startTime: -1 })
+        .lean(),
       Appointment.countDocuments(filter),
     ]);
+
+    console.log('Fetched Appointments:', JSON.stringify(appointments, null, 2));
 
     return res.status(200).json({
       success: true,
@@ -505,6 +520,23 @@ const updatePharmacyOrderStatus = async (req, res) => {
     return res.status(200).json({ success: true, message: 'Order status updated', data: order });
   } catch (err) {
     console.error('Update order status error:', err);
+    return res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+};
+
+const deletePharmacyOrder = async (req, res) => {
+  try {
+    const { orderId } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(orderId)) {
+      return res.status(400).json({ success: false, message: 'Invalid orderId' });
+    }
+
+    const order = await PharmacyOrder.findByIdAndDelete(orderId);
+    if (!order) return res.status(404).json({ success: false, message: 'Order not found' });
+
+    return res.status(200).json({ success: true, message: 'Order deleted successfully' });
+  } catch (err) {
+    console.error('Delete pharmacy order error:', err);
     return res.status(500).json({ success: false, message: 'Internal server error' });
   }
 };
@@ -684,6 +716,7 @@ module.exports = {
   getAllPharmacyProducts,
   getAllPharmacyOrders,
   updatePharmacyOrderStatus,
+  deletePharmacyOrder,
   getAllNotifications,
   deleteNotification,
   getAllChatRooms,

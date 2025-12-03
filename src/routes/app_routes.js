@@ -263,6 +263,7 @@ router.post("/admin/appointments/bulk-update-status", authenticate, isAdmin, adm
 router.get("/admin/pharmacy/products", authenticate, isAdmin, adminController.getAllPharmacyProducts);
 router.get("/admin/pharmacy/orders", authenticate, isAdmin, adminController.getAllPharmacyOrders);
 router.patch("/admin/pharmacy/orders/:orderId/status", authenticate, isAdmin, adminController.updatePharmacyOrderStatus);
+router.delete("/admin/pharmacy/orders/:orderId", authenticate, isAdmin, adminController.deletePharmacyOrder);
 
 // Notifications Management
 router.get("/admin/notifications", authenticate, isAdmin, adminController.getAllNotifications);
