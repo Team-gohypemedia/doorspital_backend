@@ -160,38 +160,84 @@ const getDashboardStats = async (req, res) => {
 
 const getTopDoctors = async (req, res) => {
   try {
-    const limit = Math.min(Math.max(Number(req.query.limit) || 5, 1), 20);
+    // 1. Top by Appointments
+    const byAppointments = await Appointment.aggregate([
+      { $match: { status: 'completed' } },
+      { $group: { _id: '$doctor', count: { $sum: 1 } } },
+      { $sort: { count: -1 } },
+      { $limit: 5 },
+      {
+        $lookup: {
+          from: 'doctors',
+          localField: '_id',
+          foreignField: '_id',
+          as: 'doctorInfo'
+        }
+      },
+      { $unwind: '$doctorInfo' },
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'doctorInfo.user',
+          foreignField: '_id',
+          as: 'userInfo'
+        }
+      },
+      { $unwind: '$userInfo' },
+      {
+        $project: {
+          _id: 1,
+          fullName: '$userInfo.userName',
+          specialization: '$doctorInfo.specialization',
+          city: '$doctorInfo.city',
+          value: '$count' // Generic field for UI
+        }
+      }
+    ]);
+    console.log('Top Doctors by Appointments:', JSON.stringify(byAppointments, null, 2));
 
-    // Fetch doctors and populate user details
-    const doctors = await Doctor.find({ isActive: true })
-      .populate('user', 'userName email')
-      .limit(limit)
-      .lean();
-
-    // For each doctor, count their completed appointments
-    const topDoctorsWithStats = await Promise.all(
-      doctors.map(async (doctor) => {
-        const appointmentCount = await Appointment.countDocuments({
-          doctor: doctor._id,
-          status: 'completed',
-        });
-
-        return {
-          _id: doctor._id,
-          fullName: doctor.user?.userName || 'Unknown Doctor',
-          specialization: doctor.specialization,
-          city: doctor.city,
-          appointments: appointmentCount,
-        };
-      })
-    );
-
-    // Sort by appointment count descending
-    topDoctorsWithStats.sort((a, b) => b.appointments - a.appointments);
+    // 2. Top by Revenue
+    const byRevenue = await Appointment.aggregate([
+      { $match: { status: 'completed' } },
+      { $group: { _id: '$doctor', totalRevenue: { $sum: '$fee' } } },
+      { $sort: { totalRevenue: -1 } },
+      { $limit: 5 },
+      {
+        $lookup: {
+          from: 'doctors',
+          localField: '_id',
+          foreignField: '_id',
+          as: 'doctorInfo'
+        }
+      },
+      { $unwind: '$doctorInfo' },
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'doctorInfo.user',
+          foreignField: '_id',
+          as: 'userInfo'
+        }
+      },
+      { $unwind: '$userInfo' },
+      {
+        $project: {
+          _id: 1,
+          fullName: '$userInfo.userName',
+          specialization: '$doctorInfo.specialization',
+          city: '$doctorInfo.city',
+          value: '$totalRevenue' // Generic field for UI
+        }
+      }
+    ]);
+    console.log('Top Doctors by Revenue:', JSON.stringify(byRevenue, null, 2));
 
     return res.status(200).json({
       success: true,
-      data: topDoctorsWithStats,
+      data: {
+        byAppointments,
+        byRevenue
+      },
     });
   } catch (err) {
     console.error('Get top doctors error:', err);
@@ -825,7 +871,6 @@ module.exports = {
   updateUserRole,
   deleteUser,
   getAllDoctors,
-  getDoctorById,
   getDoctorById,
   toggleDoctorStatus,
   updateDoctorDetails,
