@@ -12,6 +12,9 @@ const ChatMessage = require('../../chat/model/chat_message_model');
 const Conversation = require('../../chat/model/conversation_model');
 const HealthArticle = require('../../health_article/model/health_artical_model');
 const DoctorTimeOff = require('../../doctors/model/doctor_time_off_model');
+const SupportTicket = require('../../support/model/support_ticket_model');
+const SystemSetting = require('../../settings/model/system_setting_model');
+const { seedDefaultSettings } = require('../../settings/controller/settings_controller');
 
 // ============================================================================
 // DASHBOARD & STATISTICS
@@ -57,20 +60,31 @@ const getDashboardStats = async (req, res) => {
       HealthArticle.countDocuments(),
     ]);
 
-    // Mock revenue data (replace with real aggregation if available)
+    // Revenue Aggregation
+    const [pharmacyRevenue] = await PharmacyOrder.aggregate([
+      { $match: { status: 'delivered' } },
+      { $group: { _id: null, total: { $sum: '$total' } } }
+    ]);
+
+    const [appointmentRevenue] = await Appointment.aggregate([
+      { $match: { status: 'completed' } },
+      { $group: { _id: null, total: { $sum: '$fee' } } }
+    ]);
+
     const revenue = {
-      amount: totalOrders * 150 + completedAppointments * 500, // Dummy calculation
+      amount: (pharmacyRevenue?.total || 0) + (appointmentRevenue?.total || 0),
       completedOrders: deliveredOrders,
     };
 
-    // Mock settings and feature flags (replace with real DB fetch if available)
-    const settings = [
-      { key: 'slotDuration', value: 30 },
-      { key: 'cancellationPolicy', value: '24h notice' },
-      { key: 'refundWindow', value: '7 days' },
-      { key: 'platformFee', value: '10%' },
-      { key: 'taxSettings', value: 'GST 18%' },
-    ];
+    // Fetch Real Settings (Seed if empty)
+    let settings = await SystemSetting.find({});
+    if (settings.length === 0) {
+      await seedDefaultSettings();
+      settings = await SystemSetting.find({});
+    }
+
+    // Fetch Real Support Queue
+    const supportQueueCount = await SupportTicket.countDocuments({ status: 'open' });
 
     const featureFlags = [
       { name: 'New UI', enabled: true, description: 'Enable the new dashboard UI' },
@@ -98,7 +112,7 @@ const getDashboardStats = async (req, res) => {
           pendingDoctors: pendingDoctorVerifications,
           pendingPharmacies: 0, // Add pharmacy verification count if available
         },
-        supportQueue: 5, // Mock support queue count
+        supportQueue: supportQueueCount,
         settings,
         featureFlags,
         systemHealth,

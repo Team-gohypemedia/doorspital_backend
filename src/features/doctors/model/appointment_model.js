@@ -14,6 +14,7 @@ const appointmentSchema = new mongoose.Schema(
     },
     reason: String,
     mode: { type: String, enum: ["online", "offline"], default: "online" },
+    fee: { type: Number, default: 0 },
   },
   { timestamps: true }
 );

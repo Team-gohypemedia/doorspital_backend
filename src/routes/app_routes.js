@@ -22,6 +22,8 @@ const chatController = require("../features/chat/controller/chat_controller");
 const pharmacyProductController = require("../features/pharmacy/controller/pharmacy_product_controller");
 const pharmacyOrderController = require("../features/pharmacy/controller/pharmacy_order_controller");
 const adminController = require("../features/admin/controller/admin_controller");
+const supportController = require("../features/support/controller/support_controller");
+const settingsController = require("../features/settings/controller/settings_controller");
 const { doctorVerificationUpload, patientDocumentUpload, pharmacyProductUpload } = require("../utils/upload_config");
 const { authenticate, isAdmin } = require("../middleware/auth_middleware");
 
@@ -275,7 +277,18 @@ router.get("/admin/chat/rooms", authenticate, isAdmin, adminController.getAllCha
 router.get("/admin/chat/conversations", authenticate, isAdmin, adminController.getAllConversations);
 
 // Health Articles Management
+// Health Articles Management
 router.get("/admin/health-articles", authenticate, isAdmin, adminController.getAllHealthArticles);
 router.post("/admin/health-articles", authenticate, isAdmin, healthArticleController.createHealthArticle);
+
+// Support Ticket Management
+router.post("/support/tickets", authenticate, supportController.createTicket);
+router.get("/support/tickets/me", authenticate, supportController.getMyTickets);
+router.get("/admin/support/tickets", authenticate, isAdmin, supportController.getAllTickets);
+router.patch("/admin/support/tickets/:ticketId/status", authenticate, isAdmin, supportController.updateTicketStatus);
+
+// System Settings Management
+router.get("/admin/settings", authenticate, isAdmin, settingsController.getSettings);
+router.put("/admin/settings", authenticate, isAdmin, settingsController.updateSetting);
 
 module.exports = router;
