@@ -71,6 +71,39 @@ const getDashboardStats = async (req, res) => {
       { $group: { _id: null, total: { $sum: '$fee' } } }
     ]);
 
+    // Trend Aggregation (Last 7 Days)
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    sevenDaysAgo.setHours(0, 0, 0, 0);
+
+    const trendData = await Appointment.aggregate([
+      {
+        $match: {
+          createdAt: { $gte: sevenDaysAgo }
+        }
+      },
+      {
+        $group: {
+          _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
+          count: { $sum: 1 }
+        }
+      },
+      { $sort: { _id: 1 } }
+    ]);
+
+    // Fill in missing days
+    const trend = [];
+    for (let i = 0; i < 7; i++) {
+      const d = new Date();
+      d.setDate(d.getDate() - (6 - i));
+      const dateStr = d.toISOString().split('T')[0];
+      const found = trendData.find(t => t._id === dateStr);
+      trend.push({
+        date: dateStr,
+        count: found ? found.count : 0
+      });
+    }
+
     const revenue = {
       amount: (pharmacyRevenue?.total || 0) + (appointmentRevenue?.total || 0),
       completedOrders: deliveredOrders,
@@ -112,6 +145,7 @@ const getDashboardStats = async (req, res) => {
           pendingDoctors: pendingDoctorVerifications,
           pendingPharmacies: 0, // Add pharmacy verification count if available
         },
+        trend,
         supportQueue: supportQueueCount,
         settings,
         featureFlags,
