@@ -1,0 +1,228 @@
+Connected to MongoDB
+Completed Appointments: 3
+Completed Appointments with Fee: 0
+Active Doctors: 11
+Sample Completed Appointment: {
+  "fee": 0,
+  "_id": "69254e9bbf12792098e92083",
+  "patient": "6924001027acba68bd6eba19",
+  "doctor": {
+    "_id": "692414f641403b8be34f3bb8",
+    "specialization": "rdiology",
+    "experienceYears": 1,
+    "consultationFee": 50,
+    "city": "Mumbai",
+    "timeZone": "Asia/Kolkata",
+    "isActive": true,
+    "createdAt": "2025-11-24T08:19:02.965Z",
+    "updatedAt": "2025-11-24T08:23:47.548Z",
+    "__v": 0
+  },
+  "startTime": "2025-12-01T08:30:00.000Z",
+  "endTime": "2025-12-01T08:45:00.000Z",
+  "status": "completed",
+  "reason": "",
+  "mode": "online",
+  "createdAt": "2025-11-25T06:37:15.589Z",
+  "updatedAt": "2025-11-29T10:52:14.359Z",
+  "__v": 0
+}
+Aggregation Result (byAppointments): []
+Connected to MongoDB
+Completed Appointments: 20
+Completed Appointments with Fee: 20
+Active Doctors: 5
+Sample Completed Appointment: {
+  "_id": "69315dbbb40ced2ae71ec29b",
+  "patient": "69315dbab40ced2ae71ec267",
+  "doctor": {
+    "_id": "69315dbab40ced2ae71ec27f",
+    "user": "69315dbab40ced2ae71ec27d",
+    "specialization": "Cardiology",
+    "experienceYears": 5,
+    "consultationFee": 500,
+    "city": "New York",
+    "timeZone": "Asia/Kolkata",
+    "isActive": true,
+    "createdAt": "2025-12-04T10:08:58.926Z",
+    "updatedAt": "2025-12-04T10:08:58.926Z",
+    "__v": 0
+  },
+  "startTime": "2025-12-04T10:08:59.457Z",
+  "endTime": "2025-12-04T10:38:59.457Z",
+  "status": "completed",
+  "mode": "online",
+  "fee": 500,
+  "createdAt": "2025-12-04T10:08:59.458Z",
+  "updatedAt": "2025-12-04T10:08:59.458Z",
+  "__v": 0
+}
+Aggregation Result (byAppointments): [
+  {
+    "_id": "69315dbbb40ced2ae71ec285",
+    "fullName": "Dr. 1",
+    "specialization": "Dermatology",
+    "city": "London",
+    "value": 4
+  },
+  {
+    "_id": "69315dbab40ced2ae71ec27f",
+    "fullName": "Dr. 0",
+    "specialization": "Cardiology",
+    "city": "New York",
+    "value": 4
+  },
+  {
+    "_id": "69315dbbb40ced2ae71ec297",
+    "fullName": "Dr. 4",
+    "specialization": "Dermatology",
+    "city": "London",
+    "value": 4
+  },
+  {
+    "_id": "69315dbbb40ced2ae71ec291",
+    "fullName": "Dr. 3",
+    "specialization": "Cardiology",
+    "city": "New York",
+    "value": 4
+  },
+  {
+    "_id": "69315dbbb40ced2ae71ec28b",
+    "fullName": "Dr. 2",
+    "specialization": "General",
+    "city": "Mumbai",
+    "value": 4
+  }
+]
+Connected to MongoDB
+Completed Appointments: 50
+Completed Appointments with Fee: 50
+Active Doctors: 5
+Sample Completed Appointment: {
+  "_id": "693161e240626932d6650d71",
+  "patient": "693161e140626932d6650d3f",
+  "doctor": {
+    "_id": "693161e240626932d6650d55",
+    "user": "693161e140626932d6650d53",
+    "specialization": "Cardiology",
+    "experienceYears": 5,
+    "consultationFee": 1500,
+    "city": "New York",
+    "timeZone": "Asia/Kolkata",
+    "isActive": true,
+    "createdAt": "2025-12-04T10:26:42.016Z",
+    "updatedAt": "2025-12-04T10:26:42.016Z",
+    "__v": 0
+  },
+  "startTime": "2025-12-04T10:26:42.667Z",
+  "endTime": "2025-12-04T10:56:42.667Z",
+  "status": "completed",
+  "mode": "online",
+  "fee": 1500,
+  "createdAt": "2025-12-04T10:26:42.669Z",
+  "updatedAt": "2025-12-04T10:26:42.669Z",
+  "__v": 0
+}
+Aggregation Result (byAppointments): [
+  {
+    "_id": "693161e240626932d6650d55",
+    "fullName": "Dr. Sarah Wilson",
+    "specialization": "Cardiology",
+    "city": "New York",
+    "value": 15
+  },
+  {
+    "_id": "693161e240626932d6650d5b",
+    "fullName": "Dr. Rajesh Kumar",
+    "specialization": "Dermatology",
+    "city": "Mumbai",
+    "value": 12
+  },
+  {
+    "_id": "693161e240626932d6650d61",
+    "fullName": "Dr. Emily Chen",
+    "specialization": "Pediatrics",
+    "city": "London",
+    "value": 10
+  },
+  {
+    "_id": "693161e240626932d6650d67",
+    "fullName": "Dr. Michael Ross",
+    "specialization": "Neurology",
+    "city": "New York",
+    "value": 8
+  },
+  {
+    "_id": "693161e240626932d6650d6d",
+    "fullName": "Dr. Linda Martinez",
+    "specialization": "General",
+    "city": "Los Angeles",
+    "value": 5
+  }
+]
+Connected to MongoDB
+Completed Appointments: 50
+Completed Appointments with Fee: 50
+Active Doctors: 5
+Sample Completed Appointment: {
+  "_id": "693161e240626932d6650d71",
+  "patient": "693161e140626932d6650d3f",
+  "doctor": {
+    "_id": "693161e240626932d6650d55",
+    "user": "693161e140626932d6650d53",
+    "specialization": "Cardiology",
+    "experienceYears": 5,
+    "consultationFee": 1500,
+    "city": "New York",
+    "timeZone": "Asia/Kolkata",
+    "isActive": true,
+    "createdAt": "2025-12-04T10:26:42.016Z",
+    "updatedAt": "2025-12-04T10:26:42.016Z",
+    "__v": 0
+  },
+  "startTime": "2025-12-04T10:26:42.667Z",
+  "endTime": "2025-12-04T10:56:42.667Z",
+  "status": "completed",
+  "mode": "online",
+  "fee": 1500,
+  "createdAt": "2025-12-04T10:26:42.669Z",
+  "updatedAt": "2025-12-04T10:26:42.669Z",
+  "__v": 0
+}
+Aggregation Result (byAppointments): [
+  {
+    "_id": "693161e240626932d6650d55",
+    "fullName": "Dr. Sarah Wilson",
+    "specialization": "Cardiology",
+    "city": "New York",
+    "value": 15
+  },
+  {
+    "_id": "693161e240626932d6650d5b",
+    "fullName": "Dr. Rajesh Kumar",
+    "specialization": "Dermatology",
+    "city": "Mumbai",
+    "value": 12
+  },
+  {
+    "_id": "693161e240626932d6650d61",
+    "fullName": "Dr. Emily Chen",
+    "specialization": "Pediatrics",
+    "city": "London",
+    "value": 10
+  },
+  {
+    "_id": "693161e240626932d6650d67",
+    "fullName": "Dr. Michael Ross",
+    "specialization": "Neurology",
+    "city": "New York",
+    "value": 8
+  },
+  {
+    "_id": "693161e240626932d6650d6d",
+    "fullName": "Dr. Linda Martinez",
+    "specialization": "General",
+    "city": "Los Angeles",
+    "value": 5
+  }
+]

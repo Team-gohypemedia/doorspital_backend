@@ -1,0 +1,26 @@
+Connected to MongoDB
+Seeding error: MongoServerError: E11000 duplicate key error collection: doorspitals.users index: email_1 dup key: { email: "user0@example.com" }
+Connected to MongoDB
+Created 10 Users
+Seeding error: ValidationError: selfieVerification.selfie.path: Path `selfieVerification.selfie.path` is required., selfieVerification.selfie.filename: Path `selfieVerification.selfie.filename` is required., identity.governmentId.path: Path `identity.governmentId.path` is required., identity.governmentId.filename: Path `identity.governmentId.filename` is required., identity.documentType: Path `identity.documentType` is required., registration.registrationCertificate.path: Path `registration.registrationCertificate.path` is required., registration.registrationCertificate.filename: Path `registration.registrationCertificate.filename` is required., registration.issueDate: Path `registration.issueDate` is required., registration.councilName: Path `registration.councilName` is required., registration.registrationNumber: Path `registration.registrationNumber` is required., qualifications.mbbsCertificate.path: Path `qualifications.mbbsCertificate.path` is required., qualifications.mbbsCertificate.filename: Path `qualifications.mbbsCertificate.filename` is required., personalDetails.state: Path `personalDetails.state` is required., personalDetails.clinicAddress: Path `personalDetails.clinicAddress` is required., personalDetails.clinicHospitalName: Path `personalDetails.clinicHospitalName` is required., personalDetails.yearsOfExperience: Path `personalDetails.yearsOfExperience` is required., personalDetails.phoneNumber: Path `personalDetails.phoneNumber` is required., personalDetails.email: Path `personalDetails.email` is required.
+Connected to MongoDB
+Created 10 Users
+Created 5 Doctors
+Created 20 Completed Appointments
+Created 5 Open Support Tickets
+Seeded System Settings
+Database seeded successfully!
+Connected to MongoDB
+Created 10 Users
+Created 5 Doctors
+Created 50 Completed Appointments
+Created 5 Open Support Tickets
+Seeded System Settings
+Database seeded successfully!
+Connected to MongoDB
+Created 10 Users
+Created 5 Doctors
+Created 50 Completed Appointments
+Created 5 Open Support Tickets
+Seeded System Settings
+Database seeded successfully!

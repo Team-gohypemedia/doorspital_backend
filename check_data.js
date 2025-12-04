@@ -7,12 +7,12 @@ require('dotenv').config();
 
 const log = (msg) => {
     console.log(msg);
-    fs.appendFileSync('check_data.log', msg + '\n');
+    fs.appendFileSync('check_data.txt', msg + '\n');
 };
 
 const checkData = async () => {
     try {
-        await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/doorspital');
+        await mongoose.connect(process.env.MONGODB || 'mongodb://localhost:27017/doorspital');
         log('Connected to MongoDB');
 
         const completedAppointments = await Appointment.countDocuments({ status: 'completed' });
@@ -68,7 +68,7 @@ const checkData = async () => {
         process.exit(0);
     } catch (err) {
         console.error('Error:', err);
-        fs.appendFileSync('check_data.log', 'Error: ' + err + '\n');
+        fs.appendFileSync('check_data.txt', 'Error: ' + err + '\n');
         process.exit(1);
     }
 };
