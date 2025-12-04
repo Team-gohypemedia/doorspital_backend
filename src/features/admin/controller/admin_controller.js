@@ -19,12 +19,29 @@ const DoctorTimeOff = require('../../doctors/model/doctor_time_off_model');
 
 const getDashboardStats = async (req, res) => {
   try {
-    const stats = await Promise.all([
+    const [
+      totalUsers,
+      totalDoctors,
+      totalPatients,
+      totalAdmins,
+      totalAppointments,
+      confirmedAppointments,
+      completedAppointments,
+      cancelledAppointments,
+      totalProducts,
+      totalOrders,
+      deliveredOrders,
+      pendingDoctorVerifications,
+      approvedDoctorVerifications,
+      rejectedDoctorVerifications,
+      totalNotifications,
+      totalChatRooms,
+      totalHealthArticles,
+    ] = await Promise.all([
       User.countDocuments(),
       User.countDocuments({ role: 'doctor' }),
       User.countDocuments({ role: 'user' }),
       User.countDocuments({ role: 'admin' }),
-      Doctor.countDocuments(),
       Appointment.countDocuments(),
       Appointment.countDocuments({ status: 'confirmed' }),
       Appointment.countDocuments({ status: 'completed' }),
@@ -40,41 +57,96 @@ const getDashboardStats = async (req, res) => {
       HealthArticle.countDocuments(),
     ]);
 
+    // Mock revenue data (replace with real aggregation if available)
+    const revenue = {
+      amount: totalOrders * 150 + completedAppointments * 500, // Dummy calculation
+      completedOrders: deliveredOrders,
+    };
+
+    // Mock settings and feature flags (replace with real DB fetch if available)
+    const settings = [
+      { key: 'slotDuration', value: 30 },
+      { key: 'cancellationPolicy', value: '24h notice' },
+      { key: 'refundWindow', value: '7 days' },
+      { key: 'platformFee', value: '10%' },
+      { key: 'taxSettings', value: 'GST 18%' },
+    ];
+
+    const featureFlags = [
+      { name: 'New UI', enabled: true, description: 'Enable the new dashboard UI' },
+      { name: 'Beta Features', enabled: false, description: 'Access to beta features' },
+    ];
+
+    const systemHealth = {
+      mongodb: {
+        status: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected',
+        readyState: mongoose.connection.readyState,
+      },
+    };
+
     return res.status(200).json({
       success: true,
       data: {
-        users: {
-          total: stats[0],
-          doctors: stats[1],
-          patients: stats[2],
-          admins: stats[3],
+        totals: {
+          users: totalPatients, // Frontend expects 'users' to be patients count usually, or total users
+          bookings: totalAppointments + totalOrders,
+          orders: totalOrders,
+          appointments: totalAppointments,
         },
-        doctors: {
-          total: stats[4],
+        revenue,
+        verifications: {
+          pendingDoctors: pendingDoctorVerifications,
+          pendingPharmacies: 0, // Add pharmacy verification count if available
         },
-        appointments: {
-          total: stats[5],
-          confirmed: stats[6],
-          completed: stats[7],
-          cancelled: stats[8],
-        },
-        pharmacy: {
-          products: stats[9],
-          orders: stats[10],
-          ordersDelivered: stats[11],
-        },
-        verification: {
-          pending: stats[12],
-          approved: stats[13],
-          rejected: stats[14],
-        },
-        notifications: stats[15],
-        chatRooms: stats[16],
-        healthArticles: stats[17],
+        supportQueue: 5, // Mock support queue count
+        settings,
+        featureFlags,
+        systemHealth,
       },
     });
   } catch (err) {
     console.error('Dashboard stats error:', err);
+    return res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+};
+
+const getTopDoctors = async (req, res) => {
+  try {
+    const limit = Math.min(Math.max(Number(req.query.limit) || 5, 1), 20);
+
+    // Fetch doctors and populate user details
+    const doctors = await Doctor.find({ isActive: true })
+      .populate('user', 'userName email')
+      .limit(limit)
+      .lean();
+
+    // For each doctor, count their completed appointments
+    const topDoctorsWithStats = await Promise.all(
+      doctors.map(async (doctor) => {
+        const appointmentCount = await Appointment.countDocuments({
+          doctor: doctor._id,
+          status: 'completed',
+        });
+
+        return {
+          _id: doctor._id,
+          fullName: doctor.user?.userName || 'Unknown Doctor',
+          specialization: doctor.specialization,
+          city: doctor.city,
+          appointments: appointmentCount,
+        };
+      })
+    );
+
+    // Sort by appointment count descending
+    topDoctorsWithStats.sort((a, b) => b.appointments - a.appointments);
+
+    return res.status(200).json({
+      success: true,
+      data: topDoctorsWithStats,
+    });
+  } catch (err) {
+    console.error('Get top doctors error:', err);
     return res.status(500).json({ success: false, message: 'Internal server error' });
   }
 };
@@ -699,6 +771,7 @@ const bulkUpdateAppointmentStatus = async (req, res) => {
 
 module.exports = {
   getDashboardStats,
+  getTopDoctors,
   getAllUsers,
   getUserById,
   updateUserRole,

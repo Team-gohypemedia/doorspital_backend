@@ -235,6 +235,7 @@ router.patch(
 
 // Dashboard & Statistics
 router.get("/admin/dashboard/stats", authenticate, isAdmin, adminController.getDashboardStats);
+router.get("/admin/doctors/top", authenticate, isAdmin, adminController.getTopDoctors);
 
 // User Management
 router.get("/admin/users", authenticate, isAdmin, adminController.getAllUsers);
