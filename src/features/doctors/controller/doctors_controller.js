@@ -62,11 +62,18 @@ const doctorSignUp = async (req, res) => {
       await user.save();
 
       // Send OTP Email
-      await sendEmail(
+      const emailSent = await sendEmail(
         email,
         "Verify Your Doctor Account",
         `Your OTP for account verification is: ${otp}\n\nThis OTP will expire in 15 minutes.`
       );
+
+      if (!emailSent) {
+        return res.status(500).json({
+          success: false,
+          message: "Failed to send OTP email. Please try again later.",
+        });
+      }
 
       return res.status(200).json({
         success: true,
@@ -107,11 +114,18 @@ const doctorSignUp = async (req, res) => {
     });
 
     // Send OTP Email
-    await sendEmail(
+    const emailSent = await sendEmail(
       email,
       "Verify Your Doctor Account",
       `Your OTP for account verification is: ${otp}\n\nThis OTP will expire in 15 minutes.`
     );
+
+    if (!emailSent) {
+      return res.status(500).json({
+        success: false,
+        message: "Failed to send OTP email. Please try again later or contact support.",
+      });
+    }
 
     // Respond
     res.status(201).json({
