@@ -99,6 +99,7 @@ router.post(
   doctorVerificationUpload,
   doctorVerificationController.submitVerification
 );
+router.post("/doctors/verify-signup", doctorController.verifyDoctorSignup);
 router.get(
   "/doctors/verification/:doctorId",
   doctorVerificationController.getVerificationStatus

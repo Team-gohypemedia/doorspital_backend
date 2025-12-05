@@ -87,6 +87,16 @@ const userSchema = new mongoose.Schema(
     reset_otp_expires: {
       type: String,
     },
+    isVerified: {
+      type: Boolean,
+      default: false,
+    },
+    verificationOtp: {
+      type: String,
+    },
+    verificationOtpExpires: {
+      type: Date,
+    },
     profileUpdatedAt: {
       type: Date,
     },

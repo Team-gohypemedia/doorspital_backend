@@ -2,12 +2,14 @@ const Doctor = require("../model/doctor_model");
 const User = require("../../auth/model/user_model");
 const { Validator } = require("node-input-validator");
 const bcrypt = require("bcryptjs");
+const crypto = require("crypto");
+const { sendEmail } = require("../../../services/send_mail");
 const { getWeeklyAvailability } = require("../services/availabilityService");
 
 const doctorSignUp = async (req, res) => {
   try {
 
-   console.log(req.body);
+    console.log(req.body);
 
     // 1️⃣ Define validation rules
     const v = new Validator(
@@ -22,7 +24,7 @@ const doctorSignUp = async (req, res) => {
         city: "string",
         timeZone: "string",
       },
-    
+
     );
 
     const matched = await v.validate();
@@ -50,12 +52,19 @@ const doctorSignUp = async (req, res) => {
     // Hash password
     const hashedPassword = bcrypt.hashSync(password, 10);
 
+    // Generate a 6-digit OTP
+    const otp = String(crypto.randomInt(100000, 1000000));
+    const otpExpires = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
+
     // Create user account for authentication
     const user = await User.create({
       userName: name || email,
       email: email,
       password: hashedPassword,
       role: "doctor",
+      isVerified: false,
+      verificationOtp: otp,
+      verificationOtpExpires: otpExpires,
     });
 
     // Create doctor profile
@@ -68,14 +77,20 @@ const doctorSignUp = async (req, res) => {
       timeZone: timeZone || "Asia/Kolkata",
     });
 
+    // Send OTP Email
+    await sendEmail(
+      email,
+      "Verify Your Doctor Account",
+      `Your OTP for account verification is: ${otp}\n\nThis OTP will expire in 15 minutes.`
+    );
+
     // Respond
     res.status(201).json({
       success: true,
-      message: "Doctor registered successfully",
+      message: "OTP sent to email. Please verify to complete registration.",
       data: {
-        doctorId: doctor._id,
-        userId: user._id,
         email: user.email,
+        requiresOtp: true
       },
     });
   } catch (err) {
@@ -127,7 +142,7 @@ const getMyDoctorId = async (req, res) => {
     // Method 2: If no verification yet, try to find any doctor (for new doctors)
     // This is a fallback - ideally doctors should have verification
     const allDoctors = await Doctor.find({}).lean();
-    
+
     // Since we can't directly link User to Doctor by email in the current schema,
     // we'll return a helpful message
     return res.status(404).json({
@@ -148,7 +163,7 @@ const topDoctors = async (req, res, next) => {
   try {
 
     console.log(req.body);
-    
+
     const { specialization, city, page = 1, limit = 10 } = req.query;
     const filter = { isActive: true };
     if (specialization) filter.specialization = specialization;
@@ -210,10 +225,70 @@ const doctorAvailability = async (req, res, next) => {
   }
 };
 
+const verifyDoctorSignup = async (req, res) => {
+  try {
+    const { email, otp } = req.body;
+
+    const v = new Validator(req.body, {
+      email: "required|email",
+      otp: "required|string|minLength:6|maxLength:6",
+    });
+
+    const matched = await v.validate();
+    if (!matched) {
+      return res.status(422).json({
+        success: false,
+        message: "Validation failed",
+        errors: v.errors,
+      });
+    }
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    if (user.isVerified) {
+      return res.status(400).json({ success: false, message: "User already verified" });
+    }
+
+    if (user.verificationOtp !== otp) {
+      return res.status(400).json({ success: false, message: "Invalid OTP" });
+    }
+
+    if (user.verificationOtpExpires < new Date()) {
+      return res.status(400).json({ success: false, message: "OTP expired" });
+    }
+
+    // Mark as verified and clear OTP
+    user.isVerified = true;
+    user.verificationOtp = undefined;
+    user.verificationOtpExpires = undefined;
+    await user.save();
+
+    // Fetch doctor details to return consistent response
+    const doctor = await Doctor.findOne({ user: user._id });
+
+    res.status(200).json({
+      success: true,
+      message: "Verification successful. You can now login.",
+      data: {
+        doctorId: doctor?._id,
+        userId: user._id,
+        email: user.email,
+      },
+    });
+  } catch (err) {
+    console.error("Doctor verification error:", err);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
 module.exports = {
   topDoctors,
   doctor,
   doctorSignUp,
   doctorAvailability,
   getMyDoctorId,
+  verifyDoctorSignup,
 };
