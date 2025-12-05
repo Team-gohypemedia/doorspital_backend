@@ -41,11 +41,40 @@ const doctorSignUp = async (req, res) => {
     const { name, email, password, specialization, experienceYears, consultationFee, city, timeZone } = req.body;
 
     // Check if user with this email already exists
-    const existingUser = await User.findOne({ email: email });
-    if (existingUser) {
-      return res.status(400).json({
-        success: false,
-        message: "User with this email already exists",
+    let user = await User.findOne({ email: email });
+    if (user) {
+      if (user.isVerified) {
+        return res.status(400).json({
+          success: false,
+          message: "User with this email already exists",
+        });
+      }
+
+      // If user exists but not verified, update OTP and resend
+      const otp = String(crypto.randomInt(100000, 1000000));
+      const otpExpires = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
+
+      user.verificationOtp = otp;
+      user.verificationOtpExpires = otpExpires;
+      // Update other fields if needed, e.g. name if changed
+      if (name) user.userName = name;
+      if (password) user.password = bcrypt.hashSync(password, 10);
+      await user.save();
+
+      // Send OTP Email
+      await sendEmail(
+        email,
+        "Verify Your Doctor Account",
+        `Your OTP for account verification is: ${otp}\n\nThis OTP will expire in 15 minutes.`
+      );
+
+      return res.status(200).json({
+        success: true,
+        message: "OTP resent to email. Please verify to complete registration.",
+        data: {
+          email: user.email,
+          requiresOtp: true
+        },
       });
     }
 
@@ -57,7 +86,7 @@ const doctorSignUp = async (req, res) => {
     const otpExpires = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
 
     // Create user account for authentication
-    const user = await User.create({
+    user = await User.create({
       userName: name || email,
       email: email,
       password: hashedPassword,
