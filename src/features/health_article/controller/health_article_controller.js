@@ -43,4 +43,23 @@ const createHealthArticle = async (req, res) => {
   }
 };
 
-module.exports = { createHealthArticle };
+/**
+ * GET /api/health-articles
+ */
+const getHealthArticles = async (req, res) => {
+  try {
+    const articles = await HealthArticle.find().sort({ createdAt: -1 });
+    return res.status(200).json({
+      success: true,
+      data: articles,
+    });
+  } catch (error) {
+    console.error("Error fetching health articles:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
+  }
+};
+
+module.exports = { createHealthArticle, getHealthArticles };

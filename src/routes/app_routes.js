@@ -36,6 +36,7 @@ router.post("/admin/firebase-config", googleSignController.googleSign);
 router.post("/admin/sign-up", adminSignUpController.adminSignUp);
 router.post("/auth/sign-out", authenticate, signOutController.signOut);
 router.post("/health-article/model/health-artical-model", healthArticleController.createHealthArticle);
+router.get("/health-articles", healthArticleController.getHealthArticles);
 
 // Profile Routes
 router.get("/profile/me", authenticate, profileController.getProfile);
