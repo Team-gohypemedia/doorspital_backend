@@ -9,6 +9,7 @@ const doctorSchema = new mongoose.Schema(
     city: { type: String },
     timeZone: { type: String, default: "Asia/Kolkata" },
     isActive: { type: Boolean, default: true },
+    services: [{ type: String }],
   },
   { timestamps: true }
 );

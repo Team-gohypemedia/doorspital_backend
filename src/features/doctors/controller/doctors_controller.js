@@ -207,10 +207,11 @@ const topDoctors = async (req, res, next) => {
 
     console.log(req.body);
 
-    const { specialization, city, page = 1, limit = 10 } = req.query;
+    const { specialization, city, service, page = 1, limit = 10 } = req.query;
     const filter = { isActive: true };
     if (specialization) filter.specialization = specialization;
     if (city) filter.city = city;
+    if (service) filter.services = { $in: [service] };
 
     const skip = (Number(page) - 1) * Number(limit);
     const [data, total] = await Promise.all([
@@ -327,6 +328,32 @@ const verifyDoctorSignup = async (req, res) => {
   }
 };
 
+const updateServices = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const { services } = req.body;
+
+    if (!Array.isArray(services)) {
+      return res.status(400).json({ success: false, message: "Services must be an array" });
+    }
+
+    const doctor = await Doctor.findOneAndUpdate(
+      { user: userId },
+      { services },
+      { new: true }
+    );
+
+    if (!doctor) {
+      return res.status(404).json({ success: false, message: "Doctor profile not found" });
+    }
+
+    res.status(200).json({ success: true, message: "Services updated successfully", data: doctor });
+  } catch (err) {
+    console.error("Update services error:", err);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
 module.exports = {
   topDoctors,
   doctor,
@@ -334,4 +361,5 @@ module.exports = {
   doctorAvailability,
   getMyDoctorId,
   verifyDoctorSignup,
+  updateServices,
 };

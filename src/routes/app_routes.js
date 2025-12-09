@@ -82,6 +82,7 @@ router.get("/doctor/:doctorId", doctorController.doctor);
 router.post("/doctors/sign-up", doctorController.doctorSignUp);
 router.get("/doctors/:doctorId/availability", doctorController.doctorAvailability);
 router.get("/doctors/my-doctor-id", authenticate, doctorController.getMyDoctorId);
+router.put("/doctors/services", authenticate, doctorController.updateServices);
 
 // Doctor Availability Routes (for verified doctors to set their schedule)
 router.post(
