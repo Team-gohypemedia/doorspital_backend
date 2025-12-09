@@ -635,7 +635,7 @@ const getDoctorDashboardOverview = async (req, res) => {
           specialization: doctor.specialization,
           city: doctor.city,
           timeZone: doctor.timeZone,
-          verificationStatus: verification.status,
+          verificationStatus: verification?.status || "pending",
         },
         stats: {
           totalUpcoming,
