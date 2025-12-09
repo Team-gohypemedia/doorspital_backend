@@ -262,8 +262,9 @@ const getVerificationStatus = async (req, res) => {
       .lean();
 
     if (!verification) {
-      return res.status(404).json({
-        success: false,
+      return res.status(200).json({
+        success: true, // It's a successful lookup, just no data found
+        data: null,
         message: "Verification not found",
       });
     }
