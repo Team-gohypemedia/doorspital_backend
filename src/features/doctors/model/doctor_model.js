@@ -10,6 +10,8 @@ const doctorSchema = new mongoose.Schema(
     timeZone: { type: String, default: "Asia/Kolkata" },
     isActive: { type: Boolean, default: true },
     services: [{ type: String }],
+    about: { type: String, default: "" },
+    qualification: { type: String, default: "" },
   },
   { timestamps: true }
 );

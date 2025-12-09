@@ -354,6 +354,43 @@ const updateServices = async (req, res) => {
   }
 };
 
+const updateProfile = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const {
+      specialization,
+      experienceYears,
+      consultationFee,
+      city,
+      about,
+      qualification
+    } = req.body;
+
+    const updateData = {};
+    if (specialization) updateData.specialization = specialization;
+    if (experienceYears) updateData.experienceYears = experienceYears;
+    if (consultationFee) updateData.consultationFee = consultationFee;
+    if (city) updateData.city = city;
+    if (about !== undefined) updateData.about = about;
+    if (qualification !== undefined) updateData.qualification = qualification;
+
+    const doctor = await Doctor.findOneAndUpdate(
+      { user: userId },
+      updateData,
+      { new: true }
+    );
+
+    if (!doctor) {
+      return res.status(404).json({ success: false, message: "Doctor profile not found" });
+    }
+
+    res.status(200).json({ success: true, message: "Profile updated successfully", data: doctor });
+  } catch (err) {
+    console.error("Update doctor profile error:", err);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
 module.exports = {
   topDoctors,
   doctor,
@@ -362,4 +399,5 @@ module.exports = {
   getMyDoctorId,
   verifyDoctorSignup,
   updateServices,
+  updateProfile,
 };
