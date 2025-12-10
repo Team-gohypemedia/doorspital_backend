@@ -43,64 +43,22 @@ const doctorSignUp = async (req, res) => {
     // Check if user with this email already exists
     let user = await User.findOne({ email: email });
     if (user) {
-      if (user.isVerified) {
-        return res.status(400).json({
-          success: false,
-          message: "User with this email already exists",
-        });
-      }
-
-      // If user exists but not verified, update OTP and resend
-      const otp = String(crypto.randomInt(100000, 1000000));
-      const otpExpires = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
-
-      user.verificationOtp = otp;
-      user.verificationOtpExpires = otpExpires;
-      // Update other fields if needed, e.g. name if changed
-      if (name) user.userName = name;
-      if (password) user.password = bcrypt.hashSync(password, 10);
-      await user.save();
-
-      // Send OTP Email
-      const emailSent = await sendEmail(
-        email,
-        "Verify Your Doctor Account",
-        `Your OTP for account verification is: ${otp}\n\nThis OTP will expire in 15 minutes.`
-      );
-
-      if (!emailSent) {
-        return res.status(500).json({
-          success: false,
-          message: "Failed to send OTP email. Please try again later.",
-        });
-      }
-
-      return res.status(200).json({
-        success: true,
-        message: "OTP resent to email. Please verify to complete registration.",
-        data: {
-          email: user.email,
-          requiresOtp: true
-        },
+      return res.status(400).json({
+        success: false,
+        message: "User with this email already exists",
       });
     }
 
     // Hash password
     const hashedPassword = bcrypt.hashSync(password, 10);
 
-    // Generate a 6-digit OTP
-    const otp = String(crypto.randomInt(100000, 1000000));
-    const otpExpires = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
-
-    // Create user account for authentication
+    // Create user account for authentication (auto-verified, no OTP required)
     user = await User.create({
       userName: name || email,
       email: email,
       password: hashedPassword,
       role: "doctor",
-      isVerified: false,
-      verificationOtp: otp,
-      verificationOtpExpires: otpExpires,
+      isVerified: true, // Auto-verify since email services are in dev mode
     });
 
     // Create doctor profile
@@ -113,27 +71,14 @@ const doctorSignUp = async (req, res) => {
       timeZone: timeZone || "Asia/Kolkata",
     });
 
-    // Send OTP Email
-    const emailSent = await sendEmail(
-      email,
-      "Verify Your Doctor Account",
-      `Your OTP for account verification is: ${otp}\n\nThis OTP will expire in 15 minutes.`
-    );
-
-    if (!emailSent) {
-      return res.status(500).json({
-        success: false,
-        message: "Failed to send OTP email. Please try again later or contact support.",
-      });
-    }
-
-    // Respond
+    // Respond with success - no OTP required
     res.status(201).json({
       success: true,
-      message: "OTP sent to email. Please verify to complete registration.",
+      message: "Registration successful. You can now login.",
       data: {
         email: user.email,
-        requiresOtp: true
+        doctorId: doctor._id,
+        requiresOtp: false
       },
     });
   } catch (err) {
