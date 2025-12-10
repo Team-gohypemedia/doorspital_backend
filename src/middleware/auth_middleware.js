@@ -66,39 +66,44 @@ const authenticate = async (req, res, next) => {
 /**
  * Middleware to check if user is admin
  */
-const isAdmin = async (req, res, next) => {
-  try {
-    // First authenticate the user
-    if (!req.user) {
-      return res.status(401).json({
+const authorizeRoles = (roles = []) => {
+  return (req, res, next) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({
+          success: false,
+          message: "Authentication required",
+        });
+      }
+
+      if (!roles.includes(req.user.role)) {
+        return res.status(403).json({
+          success: false,
+          message: `Access denied. ${roles.join(" or ")} privileges required.`,
+        });
+      }
+
+      next();
+    } catch (error) {
+      console.error("Role authorization error:", error);
+      return res.status(500).json({
         success: false,
-        message: "Authentication required",
+        message: "Authorization failed",
       });
     }
-
-    // Check if user is admin
-    if (req.user.role !== "admin") {
-      return res.status(403).json({
-        success: false,
-        message: "Access denied. Admin privileges required.",
-      });
-    }
-
-    next();
-  } catch (error) {
-    console.error("Admin check error:", error);
-    return res.status(500).json({
-      success: false,
-      message: "Authorization failed",
-    });
-  }
+  };
 };
+
+const isAdmin = authorizeRoles(["admin"]);
+const isAdminOrPharmacy = authorizeRoles(["admin", "pharmacy"]);
+const isPharmacy = authorizeRoles(["pharmacy"]);
 
 module.exports = {
   authenticate,
   isAdmin,
+  isAdminOrPharmacy,
+  isPharmacy,
 };
-
 
 
 

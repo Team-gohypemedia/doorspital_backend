@@ -21,11 +21,13 @@ const notificationsController = require("../features/notifications/controller/no
 const chatController = require("../features/chat/controller/chat_controller");
 const pharmacyProductController = require("../features/pharmacy/controller/pharmacy_product_controller");
 const pharmacyOrderController = require("../features/pharmacy/controller/pharmacy_order_controller");
+const pharmacyProfileController = require("../features/pharmacy/controller/pharmacy_profile_controller");
+const pharmacyAuthController = require("../features/pharmacy/controller/pharmacy_auth_controller");
 const adminController = require("../features/admin/controller/admin_controller");
 const supportController = require("../features/support/controller/support_controller");
 const settingsController = require("../features/settings/controller/settings_controller");
 const { doctorVerificationUpload, patientDocumentUpload, pharmacyProductUpload } = require("../utils/upload_config");
-const { authenticate, isAdmin } = require("../middleware/auth_middleware");
+const { authenticate, isAdmin, isAdminOrPharmacy } = require("../middleware/auth_middleware");
 
 router.post("/auth/sign-up", signUpController.signUp);
 router.post("/auth/sign-in", signInController.signIn);
@@ -117,6 +119,7 @@ router.put(
   "/admin/doctors/verification/:verificationId/approve",
   authenticate,
   isAdmin,
+    isAdminOrPharmacy,
   doctorVerificationAdminController.approveVerification
 );
 router.put(
@@ -180,10 +183,13 @@ router.put(
 );
 
 // Pharmacy Product Routes
+router.post("/pharmacy/sign-in", pharmacyAuthController.pharmacySignIn);
+router.post("/pharmacy/delivery/sign-up", pharmacyAuthController.pharmacySignUp);
 router.post(
   "/pharmacy/products",
   authenticate,
   isAdmin,
+    isAdminOrPharmacy,
   pharmacyProductUpload.array("images", 5),
   pharmacyProductController.createProduct
 );
@@ -196,6 +202,7 @@ router.put(
   "/pharmacy/products/:productId",
   authenticate,
   isAdmin,
+    isAdminOrPharmacy,
   pharmacyProductUpload.array("images", 5),
   pharmacyProductController.updateProduct
 );
@@ -203,6 +210,7 @@ router.delete(
   "/pharmacy/products/:productId",
   authenticate,
   isAdmin,
+    isAdminOrPharmacy,
   pharmacyProductController.archiveProduct
 );
 
@@ -233,6 +241,20 @@ router.patch(
   authenticate,
   isAdmin,
   pharmacyOrderController.updateOrderStatus
+);
+
+router.get(
+  "/pharmacy/profile",
+  authenticate,
+  isAdminOrPharmacy,
+  pharmacyProfileController.getPharmacyProfile
+);
+
+router.put(
+  "/pharmacy/profile",
+  authenticate,
+  isAdminOrPharmacy,
+  pharmacyProfileController.updatePharmacyProfile
 );
 
 // ============================================================================

@@ -219,6 +219,17 @@ const updateOrderStatus = async (req, res) => {
         .status(404)
         .json({ success: false, message: "Order not found" });
     }
+    
+    const canUpdate =
+      req.user?.role === "admin" ||
+      (order.user && order.user.toString() === req.user._id.toString());
+
+    if (!canUpdate) {
+      return res.status(403).json({
+        success: false,
+        message: "You are not authorized to update this order",
+      });
+    }
 
     if (status) {
       order.status = status;
