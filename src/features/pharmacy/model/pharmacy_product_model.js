@@ -32,6 +32,12 @@ const productSchema = new mongoose.Schema(
       default: "active",
     },
     isDeleted: { type: Boolean, default: false },
+    pharmacy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Pharmacy",
+      required: true,
+      index: true,
+    },
     createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
   },
   { timestamps: true }

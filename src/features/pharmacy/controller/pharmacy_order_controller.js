@@ -1,6 +1,7 @@
 const { Validator } = require("node-input-validator");
 const PharmacyOrder = require("../model/pharmacy_order_model");
 const PharmacyProduct = require("../model/pharmacy_product_model");
+const Pharmacy = require("../model/pharmacy_model");
 
 const buildOrderItems = async (items = []) => {
   if (!Array.isArray(items) || items.length === 0) {
@@ -54,7 +55,11 @@ const buildOrderItems = async (items = []) => {
     await product.save();
   }
 
-  return { orderItems, subtotal };
+  // Get pharmacy from first product (all products should be from same pharmacy for now)
+  const firstProduct = products[0];
+  const pharmacyId = firstProduct?.pharmacy;
+
+  return { orderItems, subtotal, pharmacyId };
 };
 
 const createOrder = async (req, res) => {
@@ -80,13 +85,21 @@ const createOrder = async (req, res) => {
       });
     }
 
-    const { orderItems, subtotal } = await buildOrderItems(req.body.items);
+    const { orderItems, subtotal, pharmacyId } = await buildOrderItems(req.body.items);
+
+    if (!pharmacyId) {
+      return res.status(400).json({
+        success: false,
+        message: "Products are not associated with a pharmacy",
+      });
+    }
 
     const discount = Number(req.body.discount || 0);
     const total = subtotal - discount;
 
     const order = await PharmacyOrder.create({
       user: req.user._id,
+      pharmacy: pharmacyId,
       items: orderItems,
       subtotal,
       discount,
@@ -141,8 +154,8 @@ const getOrderById = async (req, res) => {
 
     if (!order) {
       return res
-      .status(404)
-      .json({ success: false, message: "Order not found" });
+        .status(404)
+        .json({ success: false, message: "Order not found" });
     }
 
     const isOwner =
@@ -170,6 +183,18 @@ const getAllOrders = async (req, res) => {
   try {
     const { status, paymentStatus, page = 1, limit = 20 } = req.query;
     const filter = {};
+
+    // If pharmacy user, only show their orders
+    if (req.user.role === "pharmacy") {
+      const pharmacy = await Pharmacy.findOne({ user: req.user._id });
+      if (!pharmacy) {
+        return res.status(400).json({
+          success: false,
+          message: "Pharmacy profile not found",
+        });
+      }
+      filter.pharmacy = pharmacy._id;
+    }
 
     if (status) filter.status = status;
     if (paymentStatus) filter.paymentStatus = paymentStatus;
@@ -219,10 +244,18 @@ const updateOrderStatus = async (req, res) => {
         .status(404)
         .json({ success: false, message: "Order not found" });
     }
-    
-    const canUpdate =
-      req.user?.role === "admin" ||
-      (order.user && order.user.toString() === req.user._id.toString());
+
+    // Check authorization
+    let canUpdate = req.user?.role === "admin";
+
+    // Pharmacy users can update orders that belong to their pharmacy
+    if (!canUpdate && req.user?.role === "pharmacy") {
+      const pharmacy = await Pharmacy.findOne({ user: req.user._id });
+      if (pharmacy && order.pharmacy &&
+        order.pharmacy.toString() === pharmacy._id.toString()) {
+        canUpdate = true;
+      }
+    }
 
     if (!canUpdate) {
       return res.status(403).json({

@@ -32,6 +32,12 @@ const addressSchema = new mongoose.Schema(
 const orderSchema = new mongoose.Schema(
   {
     user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+    pharmacy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Pharmacy",
+      required: true,
+      index: true,
+    },
     items: [orderItemSchema],
     subtotal: { type: Number, required: true },
     discount: { type: Number, default: 0 },

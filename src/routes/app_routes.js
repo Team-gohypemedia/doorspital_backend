@@ -119,7 +119,7 @@ router.put(
   "/admin/doctors/verification/:verificationId/approve",
   authenticate,
   isAdmin,
-    isAdminOrPharmacy,
+  isAdminOrPharmacy,
   doctorVerificationAdminController.approveVerification
 );
 router.put(
@@ -189,7 +189,7 @@ router.post(
   "/pharmacy/products",
   authenticate,
   isAdmin,
-    isAdminOrPharmacy,
+  isAdminOrPharmacy,
   pharmacyProductUpload.array("images", 5),
   pharmacyProductController.createProduct
 );
@@ -202,7 +202,7 @@ router.put(
   "/pharmacy/products/:productId",
   authenticate,
   isAdmin,
-    isAdminOrPharmacy,
+  isAdminOrPharmacy,
   pharmacyProductUpload.array("images", 5),
   pharmacyProductController.updateProduct
 );
@@ -210,7 +210,7 @@ router.delete(
   "/pharmacy/products/:productId",
   authenticate,
   isAdmin,
-    isAdminOrPharmacy,
+  isAdminOrPharmacy,
   pharmacyProductController.archiveProduct
 );
 
@@ -233,13 +233,13 @@ router.get(
 router.get(
   "/pharmacy/orders",
   authenticate,
-  isAdmin,
+  isAdminOrPharmacy,
   pharmacyOrderController.getAllOrders
 );
 router.patch(
   "/pharmacy/orders/:orderId/status",
   authenticate,
-  isAdmin,
+  isAdminOrPharmacy,
   pharmacyOrderController.updateOrderStatus
 );
 

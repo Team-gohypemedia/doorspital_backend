@@ -1,5 +1,6 @@
 const { Validator } = require("node-input-validator");
 const PharmacyProduct = require("../model/pharmacy_product_model");
+const Pharmacy = require("../model/pharmacy_model");
 
 const parseArrayField = (value) => {
   if (!value) return [];
@@ -9,7 +10,7 @@ const parseArrayField = (value) => {
     if (Array.isArray(parsed)) {
       return parsed;
     }
-  } catch (e) {}
+  } catch (e) { }
   if (typeof value === "string") {
     return value
       .split(",")
@@ -72,6 +73,15 @@ const createProduct = async (req, res) => {
 
     const images = mapUploadedImages(req.files);
 
+    // Get pharmacy for current user
+    const pharmacy = await Pharmacy.findOne({ user: req.user._id });
+    if (!pharmacy) {
+      return res.status(400).json({
+        success: false,
+        message: "Pharmacy profile not found. Please complete your pharmacy registration first.",
+      });
+    }
+
     const product = await PharmacyProduct.create({
       name,
       sku,
@@ -90,6 +100,7 @@ const createProduct = async (req, res) => {
         typeof isPrescriptionRequired === "boolean"
           ? isPrescriptionRequired
           : isPrescriptionRequired === "true",
+      pharmacy: pharmacy._id,
       createdBy: req.user?._id,
     });
 
