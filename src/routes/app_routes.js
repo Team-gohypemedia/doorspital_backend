@@ -188,7 +188,6 @@ router.post("/pharmacy/delivery/sign-up", pharmacyAuthController.pharmacySignUp)
 router.post(
   "/pharmacy/products",
   authenticate,
-  isAdmin,
   isAdminOrPharmacy,
   pharmacyProductUpload.array("images", 5),
   pharmacyProductController.createProduct
@@ -201,7 +200,6 @@ router.get(
 router.put(
   "/pharmacy/products/:productId",
   authenticate,
-  isAdmin,
   isAdminOrPharmacy,
   pharmacyProductUpload.array("images", 5),
   pharmacyProductController.updateProduct
@@ -209,7 +207,6 @@ router.put(
 router.delete(
   "/pharmacy/products/:productId",
   authenticate,
-  isAdmin,
   isAdminOrPharmacy,
   pharmacyProductController.archiveProduct
 );

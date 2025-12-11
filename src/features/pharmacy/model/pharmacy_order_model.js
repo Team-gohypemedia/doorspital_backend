@@ -35,7 +35,6 @@ const orderSchema = new mongoose.Schema(
     pharmacy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Pharmacy",
-      required: true,
       index: true,
     },
     items: [orderItemSchema],
@@ -50,7 +49,7 @@ const orderSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ["pending", "processing", "shipped", "delivered", "cancelled"],
+      enum: ["pending", "processing", "ready_for_delivery", "out_for_delivery", "shipped", "delivered", "cancelled"],
       default: "pending",
     },
     shippingAddress: { type: addressSchema, required: true },

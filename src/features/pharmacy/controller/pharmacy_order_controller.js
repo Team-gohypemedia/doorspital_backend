@@ -87,19 +87,11 @@ const createOrder = async (req, res) => {
 
     const { orderItems, subtotal, pharmacyId } = await buildOrderItems(req.body.items);
 
-    if (!pharmacyId) {
-      return res.status(400).json({
-        success: false,
-        message: "Products are not associated with a pharmacy",
-      });
-    }
-
     const discount = Number(req.body.discount || 0);
     const total = subtotal - discount;
 
-    const order = await PharmacyOrder.create({
+    const orderData = {
       user: req.user._id,
-      pharmacy: pharmacyId,
       items: orderItems,
       subtotal,
       discount,
@@ -110,7 +102,14 @@ const createOrder = async (req, res) => {
       shippingAddress: req.body.shippingAddress,
       notes: req.body.notes,
       metadata: req.body.metadata,
-    });
+    };
+
+    // Link to pharmacy if available (new products have pharmacy field)
+    if (pharmacyId) {
+      orderData.pharmacy = pharmacyId;
+    }
+
+    const order = await PharmacyOrder.create(orderData);
 
     return res.status(201).json({
       success: true,
@@ -163,7 +162,16 @@ const getOrderById = async (req, res) => {
       order.user._id.toString() === req.user._id.toString();
     const isAdmin = req.user.role === "admin";
 
-    if (!isOwner && !isAdmin) {
+    // Check if pharmacy user owns this order
+    let isPharmacyOwner = false;
+    if (req.user.role === "pharmacy" && order.pharmacy) {
+      const pharmacy = await Pharmacy.findOne({ user: req.user._id });
+      if (pharmacy && order.pharmacy.toString() === pharmacy._id.toString()) {
+        isPharmacyOwner = true;
+      }
+    }
+
+    if (!isOwner && !isAdmin && !isPharmacyOwner) {
       return res.status(403).json({
         success: false,
         message: "You are not authorized to view this order",
