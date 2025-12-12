@@ -58,6 +58,7 @@ const createProduct = async (req, res) => {
       dosageForm,
       strength,
       tags,
+      expiry,
       isPrescriptionRequired,
     } = req.body;
 
@@ -94,6 +95,7 @@ const createProduct = async (req, res) => {
       stock: stock ? Number(stock) : 0,
       dosageForm,
       strength,
+      expiry: typeof expiry === "string" ? expiry.trim() : expiry,
       tags: parseArrayField(tags),
       images,
       isPrescriptionRequired:
@@ -243,6 +245,7 @@ const updateProduct = async (req, res) => {
       "stock",
       "dosageForm",
       "strength",
+      "expiry",
       "tags",
       "status",
       "isPrescriptionRequired",
@@ -259,6 +262,11 @@ const updateProduct = async (req, res) => {
             typeof req.body[field] === "boolean"
               ? req.body[field]
               : req.body[field] === "true";
+        } else if (field === "expiry") {
+          product.expiry =
+            typeof req.body.expiry === "string"
+              ? req.body.expiry.trim()
+              : req.body.expiry;
         } else {
           product[field] = req.body[field];
         }

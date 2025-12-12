@@ -22,6 +22,7 @@ const productSchema = new mongoose.Schema(
     tags: [{ type: String, trim: true }],
     price: { type: Number, required: true, min: 0 },
     mrp: { type: Number, min: 0 },
+    expiry: { type: String, trim: true },
     discountPercent: { type: Number, min: 0 },
     stock: { type: Number, default: 0, min: 0 },
     images: [productImageSchema],
