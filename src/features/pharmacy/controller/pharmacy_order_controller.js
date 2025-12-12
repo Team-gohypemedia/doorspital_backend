@@ -294,11 +294,132 @@ const updateOrderStatus = async (req, res) => {
   }
 };
 
+const getEarningsOverview = async (req, res) => {
+  try {
+    const filter = {};
+
+    // If pharmacy user, only show their earnings
+    if (req.user.role === "pharmacy") {
+      const pharmacy = await Pharmacy.findOne({ user: req.user._id });
+      if (!pharmacy) {
+        return res.status(400).json({
+          success: false,
+          message: "Pharmacy profile not found",
+        });
+      }
+      filter.pharmacy = pharmacy._id;
+    }
+
+    // Get all completed/delivered orders for earnings
+    const completedStatuses = ["delivered", "shipped", "out_for_delivery"];
+    const earningsFilter = { ...filter, status: { $in: completedStatuses } };
+
+    const orders = await PharmacyOrder.find(earningsFilter).lean();
+
+    // Calculate totals
+    const totalRevenue = orders.reduce((sum, order) => sum + (order.total || 0), 0);
+    const totalOrders = orders.length;
+    const averageOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
+
+    // Calculate monthly data for growth
+    const now = new Date();
+    const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+    const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const lastMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0);
+
+    const currentMonthOrders = orders.filter(
+      (o) => new Date(o.createdAt) >= currentMonthStart
+    );
+    const lastMonthOrders = orders.filter(
+      (o) =>
+        new Date(o.createdAt) >= lastMonthStart &&
+        new Date(o.createdAt) <= lastMonthEnd
+    );
+
+    const currentMonthRevenue = currentMonthOrders.reduce(
+      (sum, o) => sum + (o.total || 0),
+      0
+    );
+    const lastMonthRevenue = lastMonthOrders.reduce(
+      (sum, o) => sum + (o.total || 0),
+      0
+    );
+
+    // Calculate growth percentage
+    const revenueGrowth =
+      lastMonthRevenue > 0
+        ? ((currentMonthRevenue - lastMonthRevenue) / lastMonthRevenue) * 100
+        : currentMonthRevenue > 0
+          ? 100
+          : 0;
+
+    // Get recent orders for the table (all statuses)
+    const recentOrders = await PharmacyOrder.find(filter)
+      .sort({ createdAt: -1 })
+      .limit(10)
+      .populate("user", "userName email")
+      .lean();
+
+    return res.json({
+      success: true,
+      data: {
+        totalRevenue,
+        totalOrders,
+        averageOrderValue,
+        currentMonthRevenue,
+        lastMonthRevenue,
+        revenueGrowth: parseFloat(revenueGrowth.toFixed(1)),
+        recentOrders: recentOrders.map((order) => ({
+          _id: order._id,
+          total: order.total,
+          status: order.status,
+          paymentStatus: order.paymentStatus,
+          createdAt: order.createdAt,
+          customerName: order.user?.userName || order.shippingAddress?.fullName || "Unknown",
+          itemCount: order.items?.length || 0,
+        })),
+        // Daily revenue for last 7 days chart (includes all order statuses)
+        dailyRevenue: await (async () => {
+          const allOrders = await PharmacyOrder.find(filter).lean();
+          const days = [];
+          for (let i = 6; i >= 0; i--) {
+            const date = new Date();
+            date.setDate(date.getDate() - i);
+            date.setHours(0, 0, 0, 0);
+            const nextDate = new Date(date);
+            nextDate.setDate(nextDate.getDate() + 1);
+
+            const dayOrders = allOrders.filter((o) => {
+              const orderDate = new Date(o.createdAt);
+              return orderDate >= date && orderDate < nextDate;
+            });
+
+            const dayRevenue = dayOrders.reduce((sum, o) => sum + (o.total || 0), 0);
+            days.push({
+              date: date.toISOString().split('T')[0],
+              day: date.toLocaleDateString('en-US', { weekday: 'short' }),
+              revenue: dayRevenue,
+              orders: dayOrders.length,
+            });
+          }
+          return days;
+        })(),
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching earnings overview:", error);
+    return res
+      .status(500)
+      .json({ success: false, message: "Failed to fetch earnings overview" });
+  }
+};
+
 module.exports = {
   createOrder,
   getMyOrders,
   getAllOrders,
   getOrderById,
   updateOrderStatus,
+  getEarningsOverview,
 };
 

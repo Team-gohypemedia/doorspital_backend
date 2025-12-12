@@ -254,6 +254,14 @@ router.put(
   pharmacyProfileController.updatePharmacyProfile
 );
 
+// Pharmacy Earnings
+router.get(
+  "/pharmacy/earnings",
+  authenticate,
+  isAdminOrPharmacy,
+  pharmacyOrderController.getEarningsOverview
+);
+
 // ============================================================================
 // ADMIN ROUTES (All protected with isAdmin middleware)
 // ============================================================================
