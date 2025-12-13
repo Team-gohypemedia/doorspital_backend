@@ -612,6 +612,88 @@ const deleteAppointment = async (req, res) => {
 // PHARMACY MANAGEMENT
 // ============================================================================
 
+const getAllPharmacies = async (req, res) => {
+  try {
+    const page = Math.max(Number(req.query.page) || 1, 1);
+    const limit = Math.min(Math.max(Number(req.query.limit) || 20, 1), 100);
+    const skip = (page - 1) * limit;
+    const search = req.query.search;
+    const status = req.query.status;
+
+    const matchStage = {};
+    if (status) matchStage.status = status;
+    if (search) {
+      matchStage.$or = [
+        { storeName: { $regex: search, $options: 'i' } },
+        { ownerName: { $regex: search, $options: 'i' } },
+        { phoneNumber: { $regex: search, $options: 'i' } }
+      ];
+    }
+
+    const aggregationPipeline = [
+      { $match: matchStage },
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'user',
+          foreignField: '_id',
+          as: 'userInfo'
+        }
+      },
+      { $unwind: '$userInfo' },
+      {
+        $lookup: {
+          from: 'pharmacyproducts',
+          localField: '_id',
+          foreignField: 'pharmacy',
+          as: 'products'
+        }
+      },
+      {
+        $lookup: {
+          from: 'pharmacyorders',
+          localField: '_id',
+          foreignField: 'pharmacy',
+          as: 'orders'
+        }
+      },
+      {
+        $project: {
+          _id: 1,
+          storeName: 1,
+          ownerName: 1,
+          phoneNumber: 1,
+          drugLicenseNumber: 1,
+          status: 1,
+          createdAt: 1,
+          email: '$userInfo.email',
+          userName: '$userInfo.userName',
+          productCount: { $size: '$products' },
+          orderCount: { $size: '$orders' },
+          address: 1
+        }
+      },
+      { $sort: { createdAt: -1 } },
+      { $skip: skip },
+      { $limit: limit }
+    ];
+
+    const [pharmacies, total] = await Promise.all([
+      require('../../pharmacy/model/pharmacy_model').aggregate(aggregationPipeline),
+      require('../../pharmacy/model/pharmacy_model').countDocuments(matchStage)
+    ]);
+
+    return res.status(200).json({
+      success: true,
+      data: pharmacies,
+      pagination: { page, limit, total, pages: Math.ceil(total / limit) },
+    });
+  } catch (err) {
+    console.error('Get all pharmacies error:', err);
+    return res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+};
+
 const getAllPharmacyProducts = async (req, res) => {
   try {
     const page = Math.max(Number(req.query.page) || 1, 1);
@@ -893,6 +975,7 @@ module.exports = {
   deleteNotification,
   getAllChatRooms,
   getAllConversations,
+  getAllPharmacies,
   getAllHealthArticles,
   bulkDeleteUsers,
   bulkUpdateAppointmentStatus,
