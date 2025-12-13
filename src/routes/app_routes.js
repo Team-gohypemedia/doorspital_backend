@@ -298,6 +298,7 @@ router.get("/admin/pharmacies", authenticate, isAdmin, adminController.getAllPha
 router.get("/admin/pharmacies/:pharmacyId", authenticate, isAdmin, adminController.getPharmacyById);
 router.get("/admin/pharmacy/products", authenticate, isAdmin, adminController.getAllPharmacyProducts);
 router.get("/admin/pharmacy/orders", authenticate, isAdmin, adminController.getAllPharmacyOrders);
+router.get("/admin/pharmacy/orders/:orderId", authenticate, isAdmin, adminController.getPharmacyOrderById);
 router.patch("/admin/pharmacy/orders/:orderId/status", authenticate, isAdmin, adminController.updatePharmacyOrderStatus);
 router.delete("/admin/pharmacy/orders/:orderId", authenticate, isAdmin, adminController.deletePharmacyOrder);
 

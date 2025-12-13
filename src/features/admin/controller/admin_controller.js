@@ -791,6 +791,30 @@ const getAllPharmacyOrders = async (req, res) => {
   }
 };
 
+const getPharmacyOrderById = async (req, res) => {
+  try {
+    const { orderId } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(orderId)) {
+      return res.status(400).json({ success: false, message: 'Invalid orderId' });
+    }
+
+    const PharmacyOrder = require('../../pharmacy/model/pharmacy_order_model');
+    const order = await PharmacyOrder.findById(orderId)
+      .populate('user', 'userName email phoneNumber address')
+      .populate('pharmacy', 'storeName ownerName phoneNumber address email')
+      .lean();
+
+    if (!order) {
+      return res.status(404).json({ success: false, message: 'Order not found' });
+    }
+
+    return res.status(200).json({ success: true, data: order });
+  } catch (err) {
+    console.error('Get pharmacy order details error:', err);
+    return res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+};
+
 const updatePharmacyOrderStatus = async (req, res) => {
   try {
     const { orderId } = req.params;
@@ -1006,6 +1030,7 @@ module.exports = {
   deleteAppointment,
   getAllPharmacyProducts,
   getAllPharmacyOrders,
+  getPharmacyOrderById,
   updatePharmacyOrderStatus,
   deletePharmacyOrder,
   getAllNotifications,
