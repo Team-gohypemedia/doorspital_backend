@@ -973,6 +973,54 @@ const getAllHealthArticles = async (req, res) => {
   }
 };
 
+const getHealthArticleById = async (req, res) => {
+  try {
+    const { articleId } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(articleId)) {
+      return res.status(400).json({ success: false, message: 'Invalid articleId' });
+    }
+
+    const article = await HealthArticle.findById(articleId).populate('author', 'userName email').lean();
+    if (!article) {
+      return res.status(404).json({ success: false, message: 'Article not found' });
+    }
+
+    return res.status(200).json({ success: true, data: article });
+  } catch (err) {
+    console.error('Get health article error:', err);
+    return res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+};
+
+const updateHealthArticle = async (req, res) => {
+  try {
+    const { articleId } = req.params;
+    const { title, image, date, time, description } = req.body;
+
+    if (!mongoose.Types.ObjectId.isValid(articleId)) {
+      return res.status(400).json({ success: false, message: 'Invalid articleId' });
+    }
+
+    const article = await HealthArticle.findById(articleId);
+    if (!article) {
+      return res.status(404).json({ success: false, message: 'Article not found' });
+    }
+
+    if (title) article.title = title;
+    if (image) article.image = image;
+    if (date) article.date = date;
+    if (time) article.time = time;
+    if (description) article.description = description;
+
+    await article.save();
+
+    return res.status(200).json({ success: true, message: 'Article updated', data: article });
+  } catch (err) {
+    console.error('Update health article error:', err);
+    return res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+};
+
 // ============================================================================
 // BULK OPERATIONS
 // ============================================================================
@@ -1040,6 +1088,8 @@ module.exports = {
   getAllPharmacies,
   getPharmacyById,
   getAllHealthArticles,
+  getHealthArticleById,
+  updateHealthArticle,
   bulkDeleteUsers,
   bulkUpdateAppointmentStatus,
 };

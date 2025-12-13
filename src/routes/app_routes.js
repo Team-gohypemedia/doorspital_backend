@@ -311,9 +311,10 @@ router.get("/admin/chat/rooms", authenticate, isAdmin, adminController.getAllCha
 router.get("/admin/chat/conversations", authenticate, isAdmin, adminController.getAllConversations);
 
 // Health Articles Management
-// Health Articles Management
 router.get("/admin/health-articles", authenticate, isAdmin, adminController.getAllHealthArticles);
 router.post("/admin/health-articles", authenticate, isAdmin, healthArticleController.createHealthArticle);
+router.get("/admin/health-articles/:articleId", authenticate, isAdmin, adminController.getHealthArticleById);
+router.put("/admin/health-articles/:articleId", authenticate, isAdmin, adminController.updateHealthArticle);
 
 // Support Ticket Management
 router.post("/support/tickets", authenticate, supportController.createTicket);
