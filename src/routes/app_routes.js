@@ -295,6 +295,7 @@ router.post("/admin/appointments/bulk-update-status", authenticate, isAdmin, adm
 
 // Pharmacy Management
 router.get("/admin/pharmacies", authenticate, isAdmin, adminController.getAllPharmacies);
+router.get("/admin/pharmacies/:pharmacyId", authenticate, isAdmin, adminController.getPharmacyById);
 router.get("/admin/pharmacy/products", authenticate, isAdmin, adminController.getAllPharmacyProducts);
 router.get("/admin/pharmacy/orders", authenticate, isAdmin, adminController.getAllPharmacyOrders);
 router.patch("/admin/pharmacy/orders/:orderId/status", authenticate, isAdmin, adminController.updatePharmacyOrderStatus);

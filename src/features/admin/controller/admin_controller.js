@@ -694,6 +694,43 @@ const getAllPharmacies = async (req, res) => {
   }
 };
 
+const getPharmacyById = async (req, res) => {
+  try {
+    const { pharmacyId } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(pharmacyId)) {
+      return res.status(400).json({ success: false, message: 'Invalid pharmacyId' });
+    }
+
+    const Pharmacy = require('../../pharmacy/model/pharmacy_model');
+    const pharmacy = await Pharmacy.findById(pharmacyId).populate('user', 'email userName phoneNumber').lean();
+    if (!pharmacy) {
+      return res.status(404).json({ success: false, message: 'Pharmacy not found' });
+    }
+
+    const [products, orders] = await Promise.all([
+      PharmacyProduct.find({ pharmacy: pharmacyId, isDeleted: false }).lean(),
+      PharmacyOrder.find({ pharmacy: pharmacyId }).populate('user', 'userName email').sort({ createdAt: -1 }).lean()
+    ]);
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        pharmacy,
+        products,
+        orders,
+        stats: {
+          totalProducts: products.length,
+          totalOrders: orders.length,
+          totalRevenue: orders.reduce((sum, order) => sum + (order.total || 0), 0)
+        }
+      }
+    });
+  } catch (err) {
+    console.error('Get pharmacy details error:', err);
+    return res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+};
+
 const getAllPharmacyProducts = async (req, res) => {
   try {
     const page = Math.max(Number(req.query.page) || 1, 1);
@@ -976,6 +1013,7 @@ module.exports = {
   getAllChatRooms,
   getAllConversations,
   getAllPharmacies,
+  getPharmacyById,
   getAllHealthArticles,
   bulkDeleteUsers,
   bulkUpdateAppointmentStatus,
