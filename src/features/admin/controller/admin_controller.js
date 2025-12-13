@@ -651,7 +651,13 @@ const getAllPharmacyOrders = async (req, res) => {
     if (status) filter.status = status;
 
     const [orders, total] = await Promise.all([
-      PharmacyOrder.find(filter).populate('user', 'userName email phoneNumber').skip(skip).limit(limit).sort({ createdAt: -1 }).lean(),
+      PharmacyOrder.find(filter)
+        .populate('user', 'userName email phoneNumber')
+        .populate('pharmacy', 'storeName ownerName phoneNumber')
+        .skip(skip)
+        .limit(limit)
+        .sort({ createdAt: -1 })
+        .lean(),
       PharmacyOrder.countDocuments(filter),
     ]);
 
