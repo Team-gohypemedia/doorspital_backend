@@ -26,6 +26,8 @@ const pharmacyAuthController = require("../features/pharmacy/controller/pharmacy
 const adminController = require("../features/admin/controller/admin_controller");
 const supportController = require("../features/support/controller/support_controller");
 const settingsController = require("../features/settings/controller/settings_controller");
+const giveServiceController = require("../features/give_service/give_service_controller");
+
 const { doctorVerificationUpload, patientDocumentUpload, pharmacyProductUpload } = require("../utils/upload_config");
 const { authenticate, isAdmin, isAdminOrPharmacy } = require("../middleware/auth_middleware");
 
@@ -325,5 +327,10 @@ router.patch("/admin/support/tickets/:ticketId/status", authenticate, isAdmin, s
 // System Settings Management
 router.get("/admin/settings", authenticate, isAdmin, settingsController.getSettings);
 router.put("/admin/settings", authenticate, isAdmin, settingsController.updateSetting);
+
+// Give Service Management
+router.post("/give-service", giveServiceController.submitRequest);
+router.get("/admin/give-service", authenticate, isAdmin, giveServiceController.getAllRequests);
+
 
 module.exports = router;
