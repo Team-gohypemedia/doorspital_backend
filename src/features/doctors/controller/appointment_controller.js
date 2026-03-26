@@ -1000,6 +1000,94 @@ const updateAppointmentStatusByDoctor = async (req, res) => {
   }
 };
 
+/**
+ * GET /api/appointments/:appointmentId/queue
+ * Returns the patient's queue position for their appointment on that day.
+ * Only the patient who owns the appointment can call this.
+ */
+const getAppointmentQueue = async (req, res) => {
+  try {
+    const { appointmentId } = req.params;
+    const patientId = req.userId;
+
+    if (!mongoose.Types.ObjectId.isValid(appointmentId)) {
+      return res.status(400).json({ success: false, message: "Invalid appointmentId format" });
+    }
+
+    // Fetch the target appointment and verify ownership
+    const appointment = await Appointment.findOne({
+      _id: appointmentId,
+      patient: patientId,
+    }).populate("doctor", "specialization consultationFee city");
+
+    if (!appointment) {
+      return res.status(404).json({ success: false, message: "Appointment not found" });
+    }
+
+    if (appointment.status === "cancelled") {
+      return res.status(200).json({
+        success: true,
+        data: {
+          queuePosition: null,
+          totalInQueue: 0,
+          patientsAhead: null,
+          estimatedWaitMinutes: null,
+          status: appointment.status,
+          startTime: appointment.startTime,
+          endTime: appointment.endTime,
+          message: "This appointment has been cancelled.",
+        },
+      });
+    }
+
+    // Get all active appointments for the same doctor on the same calendar day
+    const apptDay = dayjs(appointment.startTime);
+    const dayStart = apptDay.startOf("day").toDate();
+    const dayEnd = apptDay.endOf("day").toDate();
+
+    const sameDayAppointments = await Appointment.find({
+      doctor: appointment.doctor._id || appointment.doctor,
+      startTime: { $gte: dayStart, $lte: dayEnd },
+      status: { $in: ["pending", "confirmed"] },
+    })
+      .sort({ startTime: 1 })
+      .lean();
+
+    const totalInQueue = sameDayAppointments.length;
+    const queueIndex = sameDayAppointments.findIndex(
+      (a) => a._id.toString() === appointmentId
+    );
+
+    // If somehow not found in same-day list (e.g. status changed), return position 1
+    const queuePosition = queueIndex >= 0 ? queueIndex + 1 : 1;
+    const patientsAhead = queuePosition - 1;
+
+    // Estimate wait: each slot is 15 minutes by default
+    const slotDurationMinutes = 15;
+    const estimatedWaitMinutes = patientsAhead * slotDurationMinutes;
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        queuePosition,
+        totalInQueue,
+        patientsAhead,
+        estimatedWaitMinutes,
+        status: appointment.status,
+        startTime: appointment.startTime,
+        endTime: appointment.endTime,
+        message:
+          patientsAhead === 0
+            ? "You are next! Please be ready."
+            : `${patientsAhead} patient${patientsAhead > 1 ? "s" : ""} ahead of you.`,
+      },
+    });
+  } catch (error) {
+    console.error("Get appointment queue error:", error);
+    return res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};
+
 module.exports = {
   searchAvailableDoctors,
   bookAppointment,
@@ -1009,5 +1097,6 @@ module.exports = {
   getDoctorAppointments,
   getDoctorPatients,
   updateAppointmentStatusByDoctor,
+  getAppointmentQueue,
 };
 

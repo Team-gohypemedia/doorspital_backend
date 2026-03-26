@@ -178,6 +178,11 @@ router.put(
   authenticate,
   appointmentController.cancelAppointment
 );
+router.get(
+  "/appointments/:appointmentId/queue",
+  authenticate,
+  appointmentController.getAppointmentQueue
+);
 router.put(
   "/doctors/appointments/:appointmentId/status",
   authenticate,
